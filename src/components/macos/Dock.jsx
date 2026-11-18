@@ -9,10 +9,11 @@ import {
   BookMarked, 
   PlusCircle, 
   Settings,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 
-export const Dock = () => {
+export const Dock = ({ onOpenChat }) => {
   const location = useLocation();
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
@@ -30,6 +31,13 @@ export const Dock = () => {
     { to: '/projects', label: 'Dự án của tôi', icon: FolderKanban, color: 'text-amber-500' },
     { to: '/knowledge', label: 'Thư viện tri thức', icon: BookMarked, color: 'text-cyan-400' },
     { separator: true },
+    { 
+      action: onOpenChat, 
+      label: 'Ghim Chat UI & Dự Án (⌘J)', 
+      icon: Sparkles, 
+      color: 'text-ff-gold',
+      isAction: true 
+    },
     { to: '/quick-start', label: 'Tạo dự án nhanh (+)', icon: PlusCircle, color: 'text-ff-rose' },
     { to: '/profile', label: 'Cài đặt hệ thống', icon: Settings, color: 'text-neutral-300' },
   ];
@@ -62,9 +70,26 @@ export const Dock = () => {
           if (isHovered) scale = 1.28;
           else if (isNeighbor) scale = 1.12;
 
+          const content = (
+            <div
+              className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                item.special 
+                  ? 'bg-gradient-to-br from-amber-500/20 to-ff-gold/30 border border-ff-gold/50 shadow-md shadow-ff-gold/20' 
+                  : item.isAction
+                  ? 'bg-ff-gold/20 hover:bg-ff-gold/30 border border-ff-gold/40'
+                  : 'bg-white/5 hover:bg-white/15 border border-white/10'
+              }`}
+            >
+              <item.icon className={`w-5 h-5 ${item.color}`} />
+              {(item.special || item.isAction) && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-ff-gold rounded-full animate-ping opacity-75" />
+              )}
+            </div>
+          );
+
           return (
             <div
-              key={item.to}
+              key={item.label}
               className="relative flex flex-col items-center group"
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
@@ -78,21 +103,24 @@ export const Dock = () => {
                 {item.label}
               </div>
 
-              {/* Dock Icon Button */}
-              <Link
-                to={item.to}
-                style={{ transform: `scale(${scale}) translateY(${isHovered ? '-6px' : '0px'})` }}
-                className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-                  item.special 
-                    ? 'bg-gradient-to-br from-amber-500/20 to-ff-gold/30 border border-ff-gold/50 shadow-md shadow-ff-gold/20' 
-                    : 'bg-white/5 hover:bg-white/15 border border-white/10'
-                }`}
-              >
-                <item.icon className={`w-5 h-5 ${item.color}`} />
-                {item.special && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-ff-gold rounded-full animate-ping opacity-75" />
-                )}
-              </Link>
+              {/* Dock Icon Link or Action Button */}
+              {item.isAction ? (
+                <button
+                  type="button"
+                  onClick={item.action}
+                  style={{ transform: `scale(${scale}) translateY(${isHovered ? '-6px' : '0px'})` }}
+                  className="outline-none"
+                >
+                  {content}
+                </button>
+              ) : (
+                <Link
+                  to={item.to}
+                  style={{ transform: `scale(${scale}) translateY(${isHovered ? '-6px' : '0px'})` }}
+                >
+                  {content}
+                </Link>
+              )}
 
               {/* Active Dot Indicator */}
               <div 

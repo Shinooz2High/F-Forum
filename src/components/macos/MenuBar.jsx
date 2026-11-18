@@ -12,12 +12,13 @@ import {
   LayoutDashboard, 
   Compass, 
   BookOpen, 
-  Layers 
+  Layers,
+  MessageSquare
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { Avatar } from './UIElements';
 
-export const MenuBar = ({ onOpenSpotlight }) => {
+export const MenuBar = ({ onOpenSpotlight, onTogglePinnedChat, isChatActive }) => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState('');
@@ -86,8 +87,8 @@ export const MenuBar = ({ onOpenSpotlight }) => {
           </nav>
         </div>
 
-        {/* Right: Quick Tools, Spotlight Search, Clock, Avatar */}
-        <div className="flex items-center gap-3">
+        {/* Right: Quick Tools, Spotlight Search, Pinned Chat Toggle, Clock, Avatar */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Spotlight Search trigger */}
           <button
             onClick={onOpenSpotlight}
@@ -98,6 +99,25 @@ export const MenuBar = ({ onOpenSpotlight }) => {
             <span className="hidden sm:inline text-[11px] text-neutral-400">Tìm kiếm...</span>
             <kbd className="hidden md:inline-block px-1.5 py-0.2 text-[9px] font-mono rounded bg-white/10 text-neutral-400 border border-white/10">
               ⌘K
+            </kbd>
+          </button>
+
+          {/* PINNED CHAT UI TOGGLE BUTTON */}
+          <button
+            onClick={onTogglePinnedChat}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all cursor-pointer border ${
+              isChatActive
+                ? 'bg-ff-gold text-black font-semibold border-ff-gold shadow-sm shadow-ff-gold/30'
+                : 'bg-ff-gold/10 hover:bg-ff-gold/20 text-ff-gold-light border-ff-gold/30'
+            }`}
+            title="Mở hoặc ghim cửa sổ Chat AI & Workspace (Cmd + J)"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="font-medium text-[11px]">Chat Studio</span>
+            <kbd className={`hidden md:inline-block px-1 text-[9px] font-mono rounded border ${
+              isChatActive ? 'bg-black/20 text-black border-black/30' : 'bg-white/10 text-ff-gold border-white/10'
+            }`}>
+              ⌘J
             </kbd>
           </button>
 
@@ -162,6 +182,16 @@ export const MenuBar = ({ onOpenSpotlight }) => {
                 <span>{link.label}</span>
               </Link>
             ))}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onTogglePinnedChat();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm bg-ff-gold/15 text-ff-gold font-semibold border border-ff-gold/30 mt-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Mở AI Chat Studio (Gộp Workspace)</span>
+            </button>
           </div>
 
           <div className="pt-6 border-t border-white/10 flex items-center justify-between text-xs text-neutral-400">
