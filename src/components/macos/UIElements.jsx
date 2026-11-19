@@ -2,12 +2,12 @@ import React from 'react';
 
 export const Badge = ({ children, variant = 'gold', size = 'sm', className = '' }) => {
   const styles = {
-    gold: 'bg-white/10 text-foreground border-white/20',
-    cyan: 'bg-white/10 text-neutral-200 border-white/20',
-    jade: 'bg-ff-jade/10 text-ff-jade border-ff-jade/30',
-    rose: 'bg-ff-rose/10 text-ff-rose border-ff-rose/30',
-    blue: 'bg-ff-blue/10 text-blue-400 border-blue-500/30',
-    neutral: 'bg-neutral-900 text-neutral-300 border-border',
+    gold: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    cyan: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30',
+    jade: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+    rose: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30',
+    blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    neutral: 'bg-muted text-muted-foreground border-border',
   };
 
   const sizes = {
@@ -30,7 +30,7 @@ export const Tag = ({ children, active = false, onClick, className = '' }) => {
       className={`px-3 py-1 rounded-lg text-xs font-medium transition-all select-none cursor-pointer ${
         active 
           ? 'bg-foreground text-background font-semibold shadow-sm' 
-          : 'bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground border border-white/10'
+          : 'bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border'
       } ${className}`}
     >
       {children}
@@ -78,7 +78,7 @@ export const Input = ({ icon: Icon, error, className = '', ...props }) => {
         </div>
       )}
       <input
-        className={`w-full rounded-xl bg-card border border-border text-foreground placeholder-neutral-500 text-sm focus:outline-none focus:border-white focus:ring-1 focus:ring-white/30 transition-all ${
+        className={`w-full rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all ${
           Icon ? 'pl-10' : 'pl-3.5'
         } pr-4 py-2.5 ${error ? 'border-ff-rose focus:border-ff-rose focus:ring-ff-rose/30' : ''} ${className}`}
         {...props}
@@ -97,7 +97,7 @@ export const ProgressBar = ({ progress = 0, label, showPercent = true, className
           {showPercent && <span>{Math.round(progress)}%</span>}
         </div>
       )}
-      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden border border-white/10">
+      <div className="w-full h-2 rounded-full bg-muted overflow-hidden border border-border">
         <div 
           className="h-full rounded-full bg-foreground transition-all duration-500 ease-out"
           style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
@@ -117,14 +117,14 @@ export const Tabs = ({ tabs = [], activeTab, onChange, className = '' }) => {
           className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all select-none cursor-pointer ${
             activeTab === tab.id
               ? 'bg-foreground text-background font-semibold shadow-sm'
-              : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
           }`}
         >
           {tab.icon && <tab.icon className="w-3.5 h-3.5" />}
           <span>{tab.label}</span>
           {tab.badge && (
             <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-              activeTab === tab.id ? 'bg-black/15 text-black' : 'bg-white/15 text-foreground'
+              activeTab === tab.id ? 'bg-background/20 text-background' : 'bg-muted text-foreground'
             }`}>
               {tab.badge}
             </span>

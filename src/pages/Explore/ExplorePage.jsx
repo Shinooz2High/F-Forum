@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   Compass, 
   Search, 
@@ -15,21 +15,31 @@ import {
   FolderGit2,
   Cpu,
   Check,
-  Copy
+  Copy,
+  Flag
 } from 'lucide-react';
 import { Button } from '../../components/macos/Button';
 import { Badge } from '../../components/macos/UIElements';
 import { Window } from '../../components/macos/Window';
 import { mockTemplates } from '../../data/mockTemplates';
 import { mockResources } from '../../data/mockResources';
+import { useTheme } from '../../context/ThemeContext';
+import Chips from '../../components/pinui/Chips';
+import ReportContentModal from '../../components/public-web/ReportContentModal';
 
 export const ExplorePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { theme } = useTheme();
 
-  const [viewMode, setViewMode] = useState('templates'); 
+  const [viewMode, setViewMode] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('tab') === 'resources' ? 'resources' : 'templates';
+  });
   const [selectedStyle, setSelectedStyle] = useState('Tất cả');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => location.state?.highlightQuery || '');
+  const [reportTarget, setReportTarget] = useState(null);
 
   const [activeTemplate, setActiveTemplate] = useState(mockTemplates[0]);
   const [liveStageDevice, setLiveStageDevice] = useState('desktop');
@@ -107,11 +117,11 @@ export const ExplorePage = () => {
 
       {/* ================= FLOATING COMMAND DOCK ================= */}
       <div 
-        className={`sticky top-16 z-30 transition-all duration-300 max-w-5xl mx-auto px-2 ${
+        className={`sticky top-20 z-30 transition-all duration-300 max-w-5xl mx-auto px-2 ${
           isScrolled ? 'py-1' : 'py-2'
         }`}
       >
-        <div className="liquid-glass bg-black/85 rounded-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-dock">
+        <div className="liquid-glass bg-card/90 border border-border rounded-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg">
           {/* View Mode Switcher */}
           <div className="flex items-center gap-1 p-1 rounded-xl bg-black border border-border text-xs">
             <button
@@ -146,7 +156,7 @@ export const ExplorePage = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={viewMode === 'templates' ? 'Tìm mẫu theo tên, phong cách...' : 'Tìm tài nguyên, tech, tag...'}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black border border-border text-xs text-foreground placeholder-neutral-500 focus:outline-none focus:border-white"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -206,21 +216,21 @@ export const ExplorePage = () => {
                     key={template.id}
                     onMouseEnter={() => setActiveTemplate(template)}
                     onClick={() => setActiveTemplate(template)}
-                    className={`rounded-2xl transition-all duration-300 border cursor-pointer overflow-hidden p-4 group bg-card/90 ${
+                    className={`rounded-2xl transition-all duration-300 border cursor-pointer overflow-hidden p-4 group bg-card ${
                       isSelected 
-                        ? 'border-white shadow-gold-glow ring-1 ring-white/25' 
-                        : 'border-border hover:border-white/35'
+                        ? 'border-blue-500/60 shadow-md ring-1 ring-blue-500/20' 
+                        : 'border-border hover:border-blue-500/35'
                     }`}
                   >
                     {isWide ? (
                       <div className="flex flex-col sm:flex-row gap-4 items-center">
-                        <div className="w-full sm:w-44 h-24 rounded-xl overflow-hidden relative shrink-0 bg-black">
+                        <div className="w-full sm:w-44 h-24 rounded-xl overflow-hidden relative shrink-0 bg-muted">
                           <img 
                             src={template.previewImage} 
                             alt={template.title}
                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300" 
                           />
-                          <span className="absolute top-1.5 left-1.5 text-[9px] px-2 py-0.5 rounded-full bg-black/85 text-foreground font-mono border border-white/15">
+                          <span className="absolute top-1.5 left-1.5 text-[9px] px-2 py-0.5 rounded-full bg-card/90 backdrop-blur text-foreground font-mono border border-border">
                             Banner Ngang
                           </span>
                         </div>
@@ -235,20 +245,20 @@ export const ExplorePage = () => {
                           <p className="text-xs text-muted-foreground line-clamp-1">
                             {template.description}
                           </p>
-                          <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono pt-1">
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono pt-1">
                             <span>FPS: {template.fps}</span> · <span>Dung lượng: {template.bundleSize}</span>
                           </div>
                         </div>
                       </div>
                     ) : isVertical ? (
                       <div className="flex gap-4 items-center">
-                        <div className="w-20 h-28 rounded-xl overflow-hidden border border-border relative shrink-0 bg-black">
+                        <div className="w-20 h-28 rounded-xl overflow-hidden border border-border relative shrink-0 bg-muted">
                           <img 
                             src={template.previewImage} 
                             alt={template.title}
                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300" 
                           />
-                          <span className="absolute top-1 left-1 text-[8px] px-1 rounded bg-black/85 text-foreground font-mono">
+                          <span className="absolute top-1 left-1 text-[8px] px-1 rounded bg-card/90 text-foreground font-mono border border-border">
                             Mobile
                           </span>
                         </div>
@@ -265,7 +275,7 @@ export const ExplorePage = () => {
                           </p>
                           <div className="flex items-center gap-2 pt-1">
                             {template.techStack.map(ts => (
-                              <span key={ts} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-muted-foreground font-mono">
+                              <span key={ts} className="text-[9px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground font-mono">
                                 {ts}
                               </span>
                             ))}
@@ -274,18 +284,18 @@ export const ExplorePage = () => {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="h-36 sm:h-44 rounded-xl overflow-hidden relative bg-black">
+                        <div className="h-36 sm:h-44 rounded-xl overflow-hidden relative bg-muted">
                           <img 
                             src={template.previewImage} 
                             alt={template.title}
                             className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" 
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
                           <div className="absolute top-2 left-2 flex items-center gap-2">
-                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-black/85 text-foreground font-mono border border-white/20">
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-card/90 backdrop-blur text-foreground font-mono border border-border">
                               Full Landing Page
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/75 text-muted-foreground font-mono">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-card/85 backdrop-blur text-muted-foreground font-mono border border-border">
                               {template.designStyle}
                             </span>
                           </div>
@@ -315,7 +325,7 @@ export const ExplorePage = () => {
             <Window 
               title={`Live Stage — ${activeTemplate.vietnameseTitle}`}
               subtitle={activeTemplate.demoUrl}
-              className="border-border shadow-2xl bg-black"
+              className="border-border shadow-2xl bg-card"
               headerRight={
                 <div className="flex items-center gap-1.5">
                   <button
@@ -342,7 +352,7 @@ export const ExplorePage = () => {
                 </div>
               }
             >
-              <div className="p-4 bg-black/95 space-y-4">
+              <div className="p-4 bg-muted/40 space-y-4">
                 <div className={`mx-auto transition-all duration-300 ${
                   liveStageDevice === 'mobile' 
                     ? 'w-64 rounded-2xl p-3 border-2 border-border bg-card shadow-xl' 
@@ -362,7 +372,7 @@ export const ExplorePage = () => {
                       {activeTemplate.description}
                     </p>
 
-                    <div className="p-2 rounded-lg bg-black border border-white/10 font-mono text-[10px] text-foreground">
+                    <div className="p-2 rounded-lg bg-muted border border-border font-mono text-[10px] text-foreground">
                       Countdown: {liveCountdown} Ngày · 08 Giờ · 45 Phút
                     </div>
 
@@ -378,20 +388,20 @@ export const ExplorePage = () => {
                 </div>
 
                 {/* Spec Bar */}
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2 text-xs font-mono">
-                  <div className="flex items-center justify-between text-neutral-300">
+                <div className="p-3 rounded-xl bg-muted/60 border border-border space-y-2 text-xs font-mono">
+                  <div className="flex items-center justify-between text-foreground">
                     <span className="text-muted-foreground">Độ phân giải:</span>
                     <span className="text-ff-jade">{activeTemplate.responsiveScore}</span>
                   </div>
-                  <div className="flex items-center justify-between text-neutral-300">
+                  <div className="flex items-center justify-between text-foreground">
                     <span className="text-muted-foreground">Bundle size:</span>
                     <span>{activeTemplate.bundleSize} (Vite build)</span>
                   </div>
-                  <div className="flex items-center justify-between text-neutral-300">
+                  <div className="flex items-center justify-between text-foreground">
                     <span className="text-muted-foreground">Hiệu năng mượt mà:</span>
                     <span className="text-foreground">{activeTemplate.fps} FPS Canvas</span>
                   </div>
-                  <div className="flex items-center justify-between text-neutral-300">
+                  <div className="flex items-center justify-between text-foreground">
                     <span className="text-muted-foreground">Phong cách:</span>
                     <span>{activeTemplate.designStyle}</span>
                   </div>
@@ -415,9 +425,32 @@ export const ExplorePage = () => {
       {/* ================= VIEW MODE 2: BENTO FLOW FOR 8 RESOURCE CATEGORIES ================= */}
       {viewMode === 'resources' && (
         <div className="space-y-6">
+          <div className="p-4 rounded-3xl border border-border bg-card space-y-3 overflow-x-auto">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-foreground">
+                Bộ lọc 8 nhóm tài nguyên (PinUI Extruded 3D Chips)
+              </span>
+              {selectedCategory !== 'Tất cả' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('Tất cả')}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                >
+                  Hiển thị tất cả ({mockResources.length})
+                </button>
+              )}
+            </div>
+            <Chips
+              theme={theme === 'dark' ? 'dark' : 'light'}
+              rows={2}
+              defaultValue={selectedCategory === 'Tất cả' ? null : selectedCategory}
+              onChange={(val) => setSelectedCategory(val || 'Tất cả')}
+            />
+          </div>
+
           <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <span>Dòng chảy Bento 8 nhóm tài nguyên ({filteredResources.length} mục)</span>
-            <span>Phân hóa theo công năng: Wide Strip, Snippet & Visual</span>
+            <span>Phân hóa theo công năng: Wide Strip, Snippet &amp; Visual</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -429,11 +462,11 @@ export const ExplorePage = () => {
                 return (
                   <div 
                     key={resource.id} 
-                    className="md:col-span-2 lg:col-span-3 rounded-2xl bg-card p-5 border border-border hover:border-white/35 transition-all space-y-3"
+                    className="md:col-span-2 lg:col-span-3 rounded-2xl bg-card p-5 border border-border hover:border-blue-500/40 transition-all space-y-3"
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-foreground flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-muted border border-border text-foreground flex items-center justify-center">
                           <FolderGit2 className="w-4 h-4" />
                         </div>
                         <div>
@@ -454,10 +487,18 @@ export const ExplorePage = () => {
                           href={resource.sourceUrl} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 text-xs flex items-center gap-1"
+                          className="p-1.5 rounded-lg bg-muted/60 hover:bg-muted text-foreground border border-border text-xs flex items-center gap-1"
                         >
                           <ExternalLink className="w-3.5 h-3.5" /> Nguồn
                         </a>
+                        <button
+                          type="button"
+                          onClick={() => setReportTarget({ id: resource.id, title: resource.name })}
+                          className="p-1.5 rounded-lg bg-card hover:bg-muted text-muted-foreground hover:text-rose-500 border border-border text-xs cursor-pointer"
+                          title="Báo cáo nội dung"
+                        >
+                          <Flag className="w-3.5 h-3.5" />
+                        </button>
                         <Button 
                           variant="primary" 
                           size="sm" 
@@ -469,22 +510,22 @@ export const ExplorePage = () => {
                       </div>
                     </div>
 
-                    <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                    <p className="text-xs text-muted-foreground leading-relaxed font-sans">
                       {resource.description}
                     </p>
 
-                    <div className="p-3 rounded-xl bg-black border border-white/10 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono text-muted-foreground">
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono text-muted-foreground">
                       <div>
                         <span>Tương thích:</span> <span className="text-foreground">{resource.compatibility}</span>
                       </div>
                       <div>
-                        <span>Giấy phép:</span> <span className="text-neutral-300">{resource.license}</span>
+                        <span>Giấy phép:</span> <span className="text-foreground">{resource.license}</span>
                       </div>
                       <div>
-                        <span>Chi phí:</span> <span className="text-neutral-300">{resource.pricing}</span>
+                        <span>Chi phí:</span> <span className="text-foreground">{resource.pricing}</span>
                       </div>
                       <div>
-                        <span>Kiểm tra:</span> <span className="text-neutral-300">{resource.lastChecked}</span>
+                        <span>Kiểm tra:</span> <span className="text-foreground">{resource.lastChecked}</span>
                       </div>
                     </div>
                   </div>
@@ -499,18 +540,28 @@ export const ExplorePage = () => {
                 return (
                   <div 
                     key={resource.id} 
-                    className="rounded-2xl bg-card p-5 border border-border hover:border-white/35 transition-all flex flex-col justify-between space-y-3"
+                    className="rounded-2xl bg-card p-5 border border-border hover:border-blue-500/40 transition-all flex flex-col justify-between space-y-3"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="gold" size="xs">{resource.category}</Badge>
-                        <button
-                          onClick={() => handleCopyCode(resource.id, sampleSnippet)}
-                          className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer"
-                        >
-                          {copiedCodeId === resource.id ? <Check className="w-3.5 h-3.5 text-ff-jade" /> : <Copy className="w-3.5 h-3.5" />}
-                          <span>{copiedCodeId === resource.id ? 'Đã Chép' : 'Sao Chép'}</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setReportTarget({ id: resource.id, title: resource.name })}
+                            className="text-muted-foreground hover:text-rose-500 cursor-pointer"
+                            title="Báo cáo nội dung"
+                          >
+                            <Flag className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleCopyCode(resource.id, sampleSnippet)}
+                            className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer"
+                          >
+                            {copiedCodeId === resource.id ? <Check className="w-3.5 h-3.5 text-ff-jade" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedCodeId === resource.id ? 'Đã Chép' : 'Sao Chép'}</span>
+                          </button>
+                        </div>
                       </div>
 
                       <h3 className="font-sans font-semibold text-base text-foreground">
@@ -520,12 +571,12 @@ export const ExplorePage = () => {
                         {resource.description}
                       </p>
 
-                      <div className="p-3 rounded-xl bg-black font-mono text-[11px] text-neutral-200 border border-white/10 overflow-x-auto leading-relaxed">
+                      <div className="p-3 rounded-xl bg-zinc-950 font-mono text-[11px] text-zinc-200 border border-border overflow-x-auto leading-relaxed">
                         <pre>{sampleSnippet}</pre>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                    <div className="pt-2 border-t border-border flex items-center justify-between">
                       <span className="text-[10px] text-muted-foreground font-mono">{resource.difficulty}</span>
                       <Button 
                         variant="primary" 
@@ -542,12 +593,12 @@ export const ExplorePage = () => {
               return (
                 <div 
                   key={resource.id} 
-                  className="rounded-2xl bg-card p-5 border border-border hover:border-white/35 transition-all flex flex-col justify-between space-y-3 group"
+                  className="rounded-2xl bg-card p-5 border border-border hover:border-blue-500/40 transition-all flex flex-col justify-between space-y-3 group"
                 >
                   <div className="space-y-3">
-                    <div className="h-28 rounded-xl bg-black border border-white/10 relative overflow-hidden flex items-center justify-center">
+                    <div className="h-28 rounded-xl bg-muted/60 border border-border relative overflow-hidden flex items-center justify-center">
                       <Cpu className="w-10 h-10 text-foreground/80 group-hover:scale-110 transition-transform duration-300" />
-                      <span className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-foreground font-mono">
+                      <span className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-card border border-border text-foreground font-mono">
                         {resource.pricing}
                       </span>
                     </div>
@@ -564,22 +615,32 @@ export const ExplorePage = () => {
 
                     <div className="flex flex-wrap gap-1">
                       {resource.tags?.slice(0, 3).map(t => (
-                        <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-300 font-mono">
+                        <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-muted border border-border text-muted-foreground font-mono">
                           #{t}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-[10px] text-ff-jade font-mono">● {resource.verificationStatus}</span>
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      onClick={() => handleUseResourceInProject(resource)}
-                    >
-                      Dùng Trong Dự Án
-                    </Button>
+                  <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-ff-jade font-mono truncate">● {resource.verificationStatus}</span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setReportTarget({ id: resource.id, title: resource.name })}
+                        className="p-1.5 rounded-lg border border-border bg-background text-muted-foreground hover:text-rose-500 cursor-pointer"
+                        title="Báo cáo nội dung"
+                      >
+                        <Flag className="w-3.5 h-3.5" />
+                      </button>
+                      <Button 
+                        variant="primary" 
+                        size="sm"
+                        onClick={() => handleUseResourceInProject(resource)}
+                      >
+                        Dùng Trong Dự Án
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
@@ -587,6 +648,13 @@ export const ExplorePage = () => {
           </div>
         </div>
       )}
+
+      <ReportContentModal
+        open={Boolean(reportTarget)}
+        targetId={reportTarget?.id || ''}
+        targetTitle={reportTarget?.title || ''}
+        onClose={() => setReportTarget(null)}
+      />
     </div>
   );
 };

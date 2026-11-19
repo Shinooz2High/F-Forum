@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { 
   Send, 
   Sparkles, 
@@ -34,12 +35,22 @@ import { Button } from '../../components/macos/Button';
 import { Badge, ProgressBar } from '../../components/macos/UIElements';
 import { mockChatMessages, mockProgressTasks, mockChecks } from '../../data/mockChat';
 import { mockFileContents, mockDiffChanges } from '../../data/mockCode';
+import { useTheme } from '../../context/ThemeContext';
+import FForumLogo from '../../components/brand/FForumLogo';
+import TaskCard from '../../components/pinui/TaskCard';
+import ErrorRetryCard from '../../components/public-web/ErrorRetryCard';
+import { enqueueOfflinePrompt } from '../../components/public-web/OfflineQueueBanner';
+import { getGuestQuotaRemaining, sendAiChat } from '../../services/aiClient';
 
 export const WorkspacePage = () => {
   const location = useLocation();
+  const { theme, authUser, simulateOffline } = useTheme();
   const passedPrompt = location.state?.initialPrompt || '';
   const passedTemplate = location.state?.templateTitle || '';
   const passedResource = location.state?.resourceContext || null;
+  const passedAutoSubmit = Boolean(location.state?.autoSubmit);
+  const passedAction = location.state?.action || null;
+  const passedModel = location.state?.model || 'F-Forum Architect';
 
   const [activeTab, setActiveTab] = useState('preview');
   const [deviceView, setDeviceView] = useState('desktop');
@@ -90,7 +101,7 @@ export const WorkspacePage = () => {
   ]);
 
   const [chatList, setChatList] = useState(() => {
-    if (passedPrompt) {
+    if (passedPrompt && !passedAutoSubmit) {
       return [
         ...mockChatMessages,
         {
@@ -103,7 +114,7 @@ export const WorkspacePage = () => {
           id: `msg-${Date.now() + 1}`,
           sender: 'ai',
           timestamp: 'Bây giờ',
-          content: `Tôi đã tiếp nhận chỉ dẫn: "${passedPrompt.slice(0, 120)}..."\n\nĐang tự động tích hợp cấu trúc tệp, cập nhật giao diện trong Live Preview và kích hoạt các quy tắc kiểm thử an toàn trong Checks. Bạn có thể bật cửa sổ Live Preview lơ lửng (PiP) để vừa ra lệnh vừa quan sát giao diện thay đổi tức thì!`
+          content: `Tôi đã tiếp nhận chỉ dẫn: "${passedPrompt.slice(0, 120)}..."\n\nĐang tích hợp cấu trúc tệp, đồng bộ Live Preview và kiểm thử Checks. Bạn có thể bật PiP hoặc gửi thêm lệnh bên dưới.`
         }
       ];
     }
@@ -114,33 +125,90 @@ export const WorkspacePage = () => {
   const [attachedResource, setAttachedResource] = useState(passedResource);
   const [selectedFile, setSelectedFile] = useState('HeroSection.jsx');
   const [previewCountdown, setPreviewCountdown] = useState(12);
+  const [guestQuota, setGuestQuota] = useState(() => getGuestQuotaRemaining());
+  const [simulateError502, setSimulateError502] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const autoSubmittedRef = useRef(false);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!inputMessage.trim()) return;
+  const runAiTurn = async (promptText, options = {}) => {
+    const query = promptText.trim();
+    if (!query) return;
 
+    setApiError(null);
     const userMsg = {
       id: `msg-${Date.now()}`,
       sender: 'user',
       timestamp: 'Bây giờ',
-      content: inputMessage.trim()
+      content: query
     };
-    setChatList(prev => [...prev, userMsg]);
+
+    const nextHistory = [...chatList, userMsg];
+    setChatList(nextHistory);
+
+    if (simulateOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+      enqueueOfflinePrompt(query);
+      setChatList(prev => [
+        ...prev,
+        {
+          id: `msg-${Date.now() + 1}`,
+          sender: 'ai',
+          timestamp: 'Hàng đợi Offline',
+          content: 'Thiết bị đang ngoại tuyến (LucianLabs #091) — prompt của bạn đã được xếp hàng đợi cục bộ và sẽ tự đồng bộ khi có kết nối mạng.'
+        }
+      ]);
+      return;
+    }
+
+    setIsAiThinking(true);
+    const payloadMessages = nextHistory.map(m => ({
+      role: m.sender === 'user' ? 'user' : 'assistant',
+      content: m.content
+    }));
+
+    const result = await sendAiChat({
+      messages: payloadMessages,
+      action: options.action ?? passedAction,
+      model: options.model ?? passedModel,
+      isAuthenticated: !!authUser,
+      simulateError: options.forceLiveFallback ? false : simulateError502,
+    });
+
+    setIsAiThinking(false);
+    setGuestQuota(result.quotaRemaining);
+
+    if (!result.ok) {
+      setApiError({
+        message: result.error || 'Không thể kết nối AI Gateway.',
+        retryAfter: result.retryAfter || 5,
+        quotaExceeded: Boolean(result.quotaExceeded),
+        failedText: query,
+      });
+      return;
+    }
+
+    const aiResponse = {
+      id: `msg-${Date.now() + 1}`,
+      sender: 'ai',
+      timestamp: result.mode === 'live' ? 'Live AI' : 'Sandbox',
+      content: result.notice ? `${result.reply}\n\n(${result.notice})` : result.reply,
+    };
+    setChatList(prev => [...prev, aiResponse]);
+    setPreviewCountdown(prev => (prev > 1 ? prev - 1 : 14));
+  };
+
+  useEffect(() => {
+    if (passedAutoSubmit && passedPrompt && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
+      runAiTurn(passedPrompt, { action: passedAction, model: passedModel });
+    }
+  }, [passedAutoSubmit, passedPrompt]);
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!inputMessage.trim() || isAiThinking) return;
     const query = inputMessage.trim();
     setInputMessage('');
-    setIsAiThinking(true);
-
-    setTimeout(() => {
-      const aiResponse = {
-        id: `msg-${Date.now() + 1}`,
-        sender: 'ai',
-        timestamp: 'Bây giờ',
-        content: `Đã áp dụng thay đổi cho yêu cầu: "${query}"!\n- Cập nhật thành phần \`${selectedFile}\`.\n- Đồng bộ hóa trạng thái Live Preview.\n- Kiểm thử Checks: 5/6 bài kiểm tra đạt chuẩn bảo mật và responsive.`
-      };
-      setChatList(prev => [...prev, aiResponse]);
-      setIsAiThinking(false);
-      setPreviewCountdown(prev => (prev > 1 ? prev - 1 : 14));
-    }, 1100);
+    runAiTurn(query);
   };
 
   const handleCreateNewSession = () => {
@@ -181,45 +249,69 @@ export const WorkspacePage = () => {
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col gap-2.5 relative overflow-hidden">
       {/* ================= WORKSPACE TOP COMMAND STRIP ================= */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-1.5 liquid-glass bg-black/80 rounded-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-1.5 liquid-glass bg-card/85 rounded-2xl">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsLeftCollapsed(!isLeftCollapsed)}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all text-xs flex items-center gap-1.5 cursor-pointer"
+            className="p-1.5 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground transition-all text-xs flex items-center gap-1.5 cursor-pointer"
             title={isLeftCollapsed ? 'Mở rộng bảng Lịch sử & Dự án' : 'Thu gọn bảng Lịch sử'}
           >
             {isLeftCollapsed ? <ChevronRight className="w-4 h-4 text-foreground" /> : <ChevronLeft className="w-4 h-4" />}
-            <span className="hidden md:inline font-mono text-[11px] text-neutral-300">
+            <span className="hidden md:inline font-mono text-[11px] text-foreground">
               {isLeftCollapsed ? 'Mở Thanh Dự Án' : 'Lịch Sử & Tệp'}
             </span>
           </button>
 
-          <div className="h-4 w-px bg-white/10 hidden sm:block" />
+          <div className="h-4 w-px bg-border hidden sm:block" />
 
           <div className="flex items-center gap-2.5">
-            <img
-              src="/assets/ff-logo.svg"
-              alt="F-Forum"
-              className="w-7 h-7 object-contain"
-            />
+            <FForumLogo size={26} />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-sans font-semibold text-sm sm:text-base text-foreground truncate max-w-[220px] sm:max-w-md">
+                <h1 className="font-sans font-semibold text-sm sm:text-base text-foreground truncate max-w-[200px] sm:max-w-md">
                   {sessions.find(s => s.active)?.title || 'Website CLB Sinh Viên K20'}
                 </h1>
                 <Badge variant="gold" size="xs">Arena Studio</Badge>
               </div>
               <p className="text-[10px] font-mono text-muted-foreground flex items-center gap-2">
                 <span>Vibe Coding Engine</span>
-                <span className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="w-1 h-1 rounded-full bg-border" />
                 <span className="text-ff-jade">● Live Sync</span>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Spatial Controls: PiP & Right Panel Tabs */}
-        <div className="flex items-center gap-2">
+        {/* Spatial Controls: Guest Quota, Simulate Error 502, PiP & Right Panel Tabs */}
+        <div className="flex flex-wrap items-center gap-2">
+          {authUser ? (
+            <span className="hidden xl:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 text-[11px] font-medium">
+              Không giới hạn · {authUser.name}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('ff-open-signin'))}
+              className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[11px] font-medium hover:bg-amber-500/15 cursor-pointer"
+              title="Đăng nhập Halo Sign In để mở khoá không giới hạn"
+            >
+              Khách: còn {guestQuota}/5 lượt
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setSimulateError502(prev => !prev)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-mono border transition cursor-pointer ${
+              simulateError502
+                ? 'bg-rose-500/15 border-rose-500/40 text-rose-600 dark:text-rose-300 font-semibold'
+                : 'bg-card border-border text-muted-foreground hover:text-foreground'
+            }`}
+            title="Kiểm thử cơ chế ErrorRetryCard (lucianlabs #090)"
+          >
+            {simulateError502 ? 'Đang giả lập 502' : 'Test Lỗi 502'}
+          </button>
+
           <button
             onClick={() => {
               if (previewMode === 'pip') {
@@ -232,7 +324,7 @@ export const WorkspacePage = () => {
             className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
               previewMode === 'pip'
                 ? 'bg-foreground text-background font-bold shadow-sm'
-                : 'liquid-glass text-neutral-300 hover:text-foreground'
+                : 'liquid-glass text-foreground hover:opacity-85'
             }`}
             title="Tách cửa sổ Live Preview lơ lửng trên màn hình (PiP)"
           >
@@ -242,7 +334,7 @@ export const WorkspacePage = () => {
             </span>
           </button>
 
-          <div className="hidden lg:flex items-center gap-1 bg-black p-1 rounded-xl border border-border">
+          <div className="hidden lg:flex items-center gap-1 bg-muted p-1 rounded-xl border border-border">
             {workspaceTabs.map(tab => {
               const TabIcon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -263,7 +355,7 @@ export const WorkspacePage = () => {
                   <span>{tab.label}</span>
                   {tab.badge && (
                     <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono ${
-                      isActive ? 'bg-black/15 text-black' : 'bg-white/10 text-foreground'
+                      isActive ? 'bg-background/20 text-background' : 'bg-card text-foreground border border-border'
                     }`}>
                       {tab.badge}
                     </span>
@@ -275,7 +367,7 @@ export const WorkspacePage = () => {
 
           <button
             onClick={() => setIsRightCollapsed(!isRightCollapsed)}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all text-xs cursor-pointer"
+            className="p-1.5 rounded-lg bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground transition-all text-xs cursor-pointer"
             title={isRightCollapsed ? 'Mở rộng bảng Arena' : 'Thu gọn bảng Arena'}
           >
             {isRightCollapsed ? <ChevronLeft className="w-4 h-4 text-foreground" /> : <ChevronRight className="w-4 h-4" />}
@@ -347,8 +439,8 @@ export const WorkspacePage = () => {
                 </div>
               }
             >
-              <div className="px-3 pt-2 pb-1.5 border-b border-white/10 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1 bg-black p-0.5 rounded-lg border border-white/10 flex-1">
+              <div className="px-3 pt-2 pb-1.5 border-b border-border flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 bg-muted p-0.5 rounded-lg border border-border flex-1">
                   <button
                     onClick={() => setLeftSidebarTab('chats')}
                     className={`flex-1 py-1 rounded-md text-[11px] font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
@@ -394,8 +486,8 @@ export const WorkspacePage = () => {
                         onClick={() => handleSelectSession(sess.id)}
                         className={`w-full text-left p-2.5 rounded-xl border transition-all cursor-pointer flex flex-col gap-1 ${
                           sess.active
-                            ? 'bg-white/10 border-white/30 text-foreground shadow-sm'
-                            : 'bg-black/40 border-white/5 hover:bg-white/[0.06] text-neutral-300'
+                            ? 'bg-muted border-blue-500/40 text-foreground shadow-sm'
+                            : 'bg-background/70 border-border hover:bg-muted/60 text-foreground'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1">
@@ -403,7 +495,7 @@ export const WorkspacePage = () => {
                             {sess.title}
                           </span>
                           {sess.active && (
-                            <span className="w-2 h-2 rounded-full bg-foreground shrink-0" />
+                            <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                           )}
                         </div>
                         <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
@@ -418,7 +510,7 @@ export const WorkspacePage = () => {
                     <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
                       Cấu trúc mã nguồn
                     </div>
-                    <div className="p-2 rounded-xl bg-black/60 border border-white/10 space-y-1">
+                    <div className="p-2 rounded-xl bg-muted/60 border border-border space-y-1">
                       <div className="flex items-center gap-1.5 text-foreground font-semibold py-1">
                         <Folder className="w-3.5 h-3.5" />
                         <span>src/components</span>
@@ -471,10 +563,10 @@ export const WorkspacePage = () => {
             }
           >
             {attachedResource && (
-              <div className="px-3 py-2 bg-white/[0.04] border-b border-white/10 flex items-center justify-between text-xs">
+              <div className="px-3 py-2 bg-muted/60 border-b border-border flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 truncate">
                   <Wand2 className="w-3.5 h-3.5 text-foreground shrink-0" />
-                  <span className="text-neutral-200">
+                  <span className="text-foreground">
                     Ngữ cảnh AI: <strong>{attachedResource.name}</strong> ({attachedResource.category})
                   </span>
                 </div>
@@ -500,20 +592,48 @@ export const WorkspacePage = () => {
                     <span className="text-[10px] font-mono text-muted-foreground">
                       {msg.sender === 'user' ? 'Bạn' : 'F-Forum AI Architect'}
                     </span>
-                    <span className="text-[10px] text-neutral-500">{msg.timestamp}</span>
+                    <span className="text-[10px] text-muted-foreground">{msg.timestamp}</span>
                   </div>
 
                   <div
                     className={`max-w-[90%] sm:max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap ${
                       msg.sender === 'user'
                         ? 'bg-foreground text-background font-medium shadow-sm'
-                        : 'bg-white/[0.04] text-neutral-200 border border-white/10'
+                        : 'bg-muted/70 text-foreground border border-border'
                     }`}
                   >
                     {msg.content}
                   </div>
                 </div>
               ))}
+
+              {apiError && (
+                <div className="space-y-2">
+                  <ErrorRetryCard
+                    message={apiError.message}
+                    retryAfterSeconds={apiError.retryAfter}
+                    onRetry={() => {
+                      const text = apiError.failedText || inputMessage || 'Tiếp tục hoàn thiện dự án';
+                      runAiTurn(text);
+                    }}
+                    onUseSandbox={() => {
+                      setSimulateError502(false);
+                      const text = apiError.failedText || 'Chạy chế độ Sandbox';
+                      runAiTurn(text, { forceLiveFallback: true });
+                    }}
+                    onDismiss={() => setApiError(null)}
+                  />
+                  {apiError.quotaExceeded && (
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new Event('ff-open-signin'))}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-foreground text-background text-xs font-semibold hover:opacity-90"
+                    >
+                      Mở Halo Sign In (Không giới hạn)
+                    </button>
+                  )}
+                </div>
+              )}
 
               {isAiThinking && (
                 <div className="flex items-center gap-2 text-xs text-foreground p-2 animate-pulse font-mono">
@@ -523,49 +643,53 @@ export const WorkspacePage = () => {
               )}
             </div>
 
-            <div className="px-3 py-2 border-t border-white/10 bg-white/[0.01] flex items-center gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap">
+            <div className="px-3 py-2 border-t border-border bg-muted/30 flex items-center gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap">
               <span className="text-muted-foreground font-mono flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-foreground" />
                 Gợi ý:
               </span>
               <button
                 onClick={() => setInputMessage('Nâng cấp độ tương phản và thêm hiệu ứng kính mờ Liquid Glass')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-foreground border border-border transition-colors cursor-pointer"
               >
                 Kính mờ Liquid Glass
               </button>
               <button
                 onClick={() => setInputMessage('Thêm form thu thập email đăng ký ứng tuyển')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-foreground border border-border transition-colors cursor-pointer"
               >
                 Thêm form email
               </button>
               <button
                 onClick={() => setInputMessage('Tối ưu hóa hiển thị di động cho thanh đếm ngược')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-foreground border border-border transition-colors cursor-pointer"
               >
                 Tối ưu mobile
               </button>
               <button
                 onClick={() => setInputMessage('Kiểm tra và vá các lỗ hổng bảo mật trong form')}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-card hover:bg-muted text-foreground border border-border transition-colors cursor-pointer"
               >
                 Bảo mật form
               </button>
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-black/80 flex items-center gap-2">
+            <motion.form
+              layoutId="ff-composer-morph"
+              onSubmit={handleSendMessage}
+              className="p-3 border-t border-border bg-card flex items-center gap-2"
+            >
               <input
                 type="text"
                 value={inputMessage}
                 onChange={e => setInputMessage(e.target.value)}
                 placeholder="Nhập yêu cầu: sửa giao diện, kiểm thử bảo mật, thêm logic..."
-                className="flex-1 bg-card border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-foreground placeholder-neutral-500 focus:outline-none focus:border-white"
+                className="flex-1 bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-blue-500"
               />
-              <Button type="submit" variant="primary" size="sm" icon={Send}>
+              <Button type="submit" variant="primary" size="sm" icon={Send} loading={isAiThinking}>
                 Gửi
               </Button>
-            </form>
+            </motion.form>
           </Window>
         </div>
 
@@ -694,13 +818,13 @@ export const WorkspacePage = () => {
                       </div>
                     }
                   >
-                    <div className="px-4 py-2 border-b border-white/10 bg-black/70 flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                    <div className="px-4 py-2 border-b border-border bg-muted/50 flex items-center gap-2 text-xs font-mono text-muted-foreground">
                       <span className="w-2 h-2 rounded-full bg-ff-jade" />
                       <span className="truncate flex-1">http://localhost:5173/preview</span>
                       <span className="text-[10px] text-foreground">HTTPS SECURE</span>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 bg-black flex items-center justify-center min-h-[380px]">
+                    <div className="flex-1 overflow-y-auto p-4 bg-muted/40 flex items-center justify-center min-h-[380px]">
                       <div 
                         className={`transition-all duration-300 ${
                           deviceView === 'mobile' 
@@ -708,7 +832,7 @@ export const WorkspacePage = () => {
                             : 'w-full max-w-xl'
                         }`}
                       >
-                        <div className="rounded-2xl border border-border bg-card p-6 space-y-5 text-center relative overflow-hidden shadow-2xl">
+                        <div className="rounded-2xl border border-border bg-card p-6 space-y-5 text-center relative overflow-hidden shadow-xl">
                           <div className="liquid-glass inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-foreground text-xs font-medium">
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>Tuyển Thành Viên K20</span>
@@ -726,7 +850,7 @@ export const WorkspacePage = () => {
                             <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
                               Thời gian còn lại để nộp hồ sơ
                             </p>
-                            <div className="inline-grid grid-cols-4 gap-2 bg-black p-2.5 rounded-xl border border-white/10 font-mono">
+                            <div className="inline-grid grid-cols-4 gap-2 bg-muted p-2.5 rounded-xl border border-border font-mono">
                               <div>
                                 <span className="text-xl font-bold text-foreground">{previewCountdown}</span>
                                 <span className="block text-[9px] text-muted-foreground">NGÀY</span>
@@ -773,14 +897,14 @@ export const WorkspacePage = () => {
                   <div className="p-4 space-y-4 overflow-y-auto flex-1">
                     {mockDiffChanges.map((df, idx) => (
                       <div key={idx} className="space-y-2">
-                        <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/10">
+                        <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/60 border border-border">
                           <div className="flex items-center gap-2 font-mono text-xs">
                             <span className="w-2 h-2 rounded-full bg-foreground" />
                             <span className="text-foreground font-bold">{df.fileName}</span>
                             <span className="text-ff-jade text-[11px]">+{df.addedLines}</span>
                             <span className="text-ff-rose text-[11px]">-{df.removedLines}</span>
                           </div>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-foreground font-mono">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-card border border-border text-foreground font-mono">
                             {df.status}
                           </span>
                         </div>
@@ -789,8 +913,8 @@ export const WorkspacePage = () => {
                           Tóm tắt thay đổi từ AI: {df.summary}
                         </p>
 
-                        <div className="p-3 rounded-xl bg-black font-mono text-[11px] leading-relaxed border border-white/10 overflow-x-auto">
-                          <pre className="text-neutral-300">
+                        <div className="p-3 rounded-xl bg-zinc-950 font-mono text-[11px] leading-relaxed border border-border overflow-x-auto">
+                          <pre className="text-zinc-200">
                             {df.diffText.split('\n').map((line, lIdx) => {
                               const isAdd = line.startsWith('+');
                               const isRem = line.startsWith('-');
@@ -818,23 +942,23 @@ export const WorkspacePage = () => {
                   className="h-full flex flex-col shadow-xl"
                 >
                   <div className="p-4 space-y-3 overflow-y-auto flex-1">
-                    <div className="p-3 rounded-xl bg-white/[0.04] border border-white/15 flex items-center justify-between text-xs text-foreground">
+                    <div className="p-3 rounded-xl bg-muted/60 border border-border flex items-center justify-between text-xs text-foreground">
                       <span>Tổng hợp kiểm tra: 5 Passed · 1 Cảnh báo · 0 Lỗi nghiêm trọng</span>
                       <Badge variant="jade" size="xs">An Toàn Xuất Bản</Badge>
                     </div>
 
-                    <div className="divide-y divide-white/10 space-y-2">
+                    <div className="divide-y divide-border space-y-2">
                       {mockChecks.map((chk) => (
                         <div key={chk.id} className="pt-2 flex items-start gap-3">
                           {chk.status === 'passed' && <CheckCircle2 className="w-4 h-4 text-ff-jade shrink-0 mt-0.5" />}
-                          {chk.status === 'warning' && <AlertTriangle className="w-4 h-4 text-neutral-300 shrink-0 mt-0.5" />}
-                          {chk.status === 'untested' && <div className="w-4 h-4 rounded-full border border-neutral-500 shrink-0 mt-0.5" />}
+                          {chk.status === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />}
+                          {chk.status === 'untested' && <div className="w-4 h-4 rounded-full border border-muted-foreground shrink-0 mt-0.5" />}
 
                           <div className="space-y-0.5 flex-1">
                             <div className="flex items-center justify-between">
                               <p className="font-medium text-xs text-foreground">{chk.name}</p>
                               <span className={`text-[10px] font-mono uppercase ${
-                                chk.status === 'passed' ? 'text-ff-jade' : chk.status === 'warning' ? 'text-neutral-200' : 'text-neutral-500'
+                                chk.status === 'passed' ? 'text-ff-jade' : chk.status === 'warning' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
                               }`}>
                                 {chk.status}
                               </span>
@@ -855,7 +979,7 @@ export const WorkspacePage = () => {
                   className="h-full flex flex-col shadow-xl"
                 >
                   <div className="flex-1 grid grid-cols-12 min-h-[380px]">
-                    <div className="col-span-4 border-r border-white/10 bg-black p-3 space-y-1 font-mono text-xs overflow-y-auto">
+                    <div className="col-span-4 border-r border-border bg-muted/50 p-3 space-y-1 font-mono text-xs overflow-y-auto">
                       <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Cấu Trúc Tệp</p>
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5 text-foreground font-semibold py-1">
@@ -877,8 +1001,8 @@ export const WorkspacePage = () => {
                       </div>
                     </div>
 
-                    <div className="col-span-8 p-4 bg-black overflow-y-auto font-mono text-xs leading-relaxed text-neutral-200">
-                      <pre className="text-neutral-300 whitespace-pre">
+                    <div className="col-span-8 p-4 bg-zinc-950 overflow-y-auto font-mono text-xs leading-relaxed text-zinc-100">
+                      <pre className="text-zinc-200 whitespace-pre">
                         {mockFileContents[selectedFile] || '// Tệp không có nội dung'}
                       </pre>
                     </div>
@@ -889,34 +1013,41 @@ export const WorkspacePage = () => {
               {activeTab === 'progress' && (
                 <Window
                   title="Arena Real-Time Task Progress"
-                  subtitle="Sự kiện thực tế từ AI Execution Sandbox"
+                  subtitle="Sự kiện thực tế từ AI Execution Sandbox + PinUI TaskCard"
                   className="h-full flex flex-col shadow-xl"
                 >
                   <div className="p-5 space-y-5 overflow-y-auto flex-1">
+                    <div className="flex justify-center">
+                      <TaskCard
+                        theme={theme === 'dark' ? 'dark' : 'light'}
+                        title="Tiến độ Workspace"
+                      />
+                    </div>
+
                     <ProgressBar progress={85} label="Tiến trình hoàn thiện dự án" />
 
-                    <div className="space-y-4 relative pl-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-white/10">
+                    <div className="space-y-4 relative pl-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
                       {mockProgressTasks.map((t) => (
                         <div key={t.id} className="relative flex items-center justify-between">
                           <div className={`absolute -left-6 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                             t.status === 'completed' 
-                              ? 'bg-ff-jade text-black' 
+                              ? 'bg-ff-jade text-white' 
                               : t.status === 'running' 
                               ? 'bg-foreground text-background animate-pulse' 
-                              : 'bg-neutral-800 text-neutral-400'
+                              : 'bg-muted text-muted-foreground'
                           }`}>
                             {t.status === 'completed' ? '✓' : t.id}
                           </div>
 
                           <div className="space-y-0.5">
-                            <p className={`text-xs font-medium ${t.status === 'completed' ? 'text-neutral-200' : 'text-foreground'}`}>
+                            <p className="text-xs font-medium text-foreground">
                               {t.title}
                             </p>
                             <span className="text-[10px] text-muted-foreground font-mono">Thời điểm: {t.time}</span>
                           </div>
 
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono uppercase ${
-                            t.status === 'completed' ? 'bg-ff-jade/10 text-ff-jade' : 'bg-white/15 text-foreground'
+                            t.status === 'completed' ? 'bg-ff-jade/10 text-ff-jade' : 'bg-muted text-foreground'
                           }`}>
                             {t.status}
                           </span>
@@ -944,7 +1075,7 @@ export const WorkspacePage = () => {
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-black border border-border space-y-3">
+                    <div className="p-4 rounded-2xl bg-muted/60 border border-border space-y-3">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">Tên gói nén:</span>
                         <span className="font-mono text-foreground">f-code-student-portal-v1.zip</span>
@@ -980,9 +1111,9 @@ export const WorkspacePage = () => {
                       </Button>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 text-[11px] text-muted-foreground">
+                    <div className="p-3 rounded-xl bg-muted/40 border border-border text-[11px] text-muted-foreground">
                       <p className="font-semibold text-foreground mb-1">Khởi chạy sau khi giải nén:</p>
-                      <code className="block font-mono bg-black p-2 rounded text-neutral-200 border border-white/10">
+                      <code className="block font-mono bg-zinc-950 p-2 rounded text-zinc-100 border border-border">
                         npm install && npm run dev
                       </code>
                     </div>
@@ -996,8 +1127,8 @@ export const WorkspacePage = () => {
 
       {/* ================= FLOATING PIP WINDOW (DETACHABLE VIEW) ================= */}
       {previewMode === 'pip' && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 sm:w-[420px] rounded-2xl bg-black/95 shadow-2xl border border-white/35 backdrop-blur-2xl overflow-hidden animate-fadeIn flex flex-col">
-          <div className="px-3 py-2 bg-card border-b border-white/10 flex items-center justify-between select-none">
+        <div className="fixed bottom-6 right-6 z-50 w-96 sm:w-[420px] rounded-2xl bg-card/95 shadow-2xl border border-border backdrop-blur-2xl overflow-hidden animate-fadeIn flex flex-col">
+          <div className="px-3 py-2 bg-muted/70 border-b border-border flex items-center justify-between select-none">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-macos-close cursor-pointer" onClick={() => setPreviewMode('docked')} />
@@ -1028,7 +1159,7 @@ export const WorkspacePage = () => {
             </div>
           </div>
 
-          <div className="p-4 bg-black max-h-72 overflow-y-auto text-center space-y-3">
+          <div className="p-4 bg-background max-h-72 overflow-y-auto text-center space-y-3">
             <div className="liquid-glass inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-foreground text-[10px] font-semibold">
               <Sparkles className="w-3 h-3" />
               <span>Tuyển Thành Viên K20</span>
@@ -1038,7 +1169,7 @@ export const WorkspacePage = () => {
               F-Code Technology Club
             </h4>
 
-            <div className="inline-grid grid-cols-4 gap-1.5 bg-card p-2 rounded-xl border border-white/10 font-mono text-center">
+            <div className="inline-grid grid-cols-4 gap-1.5 bg-card p-2 rounded-xl border border-border font-mono text-center">
               <div>
                 <span className="text-base font-bold text-foreground">{previewCountdown}</span>
                 <span className="block text-[8px] text-muted-foreground">NGÀY</span>
@@ -1066,7 +1197,7 @@ export const WorkspacePage = () => {
               </button>
               <button 
                 onClick={() => setPreviewMode('docked')}
-                className="px-3 py-1.5 rounded-full bg-white/10 text-neutral-200 text-[11px] hover:bg-white/15 cursor-pointer"
+                className="px-3 py-1.5 rounded-full bg-muted text-foreground text-[11px] hover:opacity-80 cursor-pointer"
               >
                 Mở Rộng
               </button>
@@ -1077,17 +1208,17 @@ export const WorkspacePage = () => {
 
       {/* ================= FULLSCREEN PREVIEW MODAL ================= */}
       {previewMode === 'fullscreen' && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col p-4 sm:p-8 animate-fadeIn">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex flex-col p-4 sm:p-8 animate-fadeIn">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-macos-close" />
               <div className="w-3 h-3 rounded-full bg-macos-minimize" />
               <div className="w-3 h-3 rounded-full bg-macos-maximize" />
-              <span className="font-mono text-xs text-neutral-300 ml-2">Fullscreen App Simulation</span>
+              <span className="font-mono text-xs text-muted-foreground ml-2">Fullscreen App Simulation</span>
             </div>
             <button
               onClick={() => setPreviewMode('docked')}
-              className="p-1.5 rounded-lg bg-white/10 text-neutral-300 hover:text-foreground cursor-pointer"
+              className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

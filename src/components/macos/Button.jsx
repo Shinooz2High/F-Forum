@@ -23,10 +23,10 @@ export const Button = ({
 
   const variantStyles = {
     primary: 'bg-foreground text-background font-semibold hover:opacity-90 shadow-sm',
-    secondary: 'liquid-glass text-foreground hover:bg-white/[0.06]',
+    secondary: 'liquid-glass text-foreground hover:bg-muted/80',
     rose: 'bg-gradient-to-r from-ff-rose to-pink-600 text-white font-semibold shadow-lg shadow-ff-rose/25 hover:brightness-110',
-    ghost: 'text-muted-foreground hover:text-foreground hover:bg-white/5',
-    outline: 'border border-border text-foreground hover:bg-white/10 hover:border-white/40',
+    ghost: 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+    outline: 'border border-border text-foreground hover:bg-muted/70',
     glass: 'liquid-glass text-foreground',
   };
 

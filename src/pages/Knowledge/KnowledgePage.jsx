@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   Search, 
@@ -7,6 +7,7 @@ import {
   CheckCircle2, 
   ExternalLink, 
   Filter,
+  Flag,
   ShieldCheck, 
   AlertCircle,
   Bookmark,
@@ -35,6 +36,10 @@ import { GlassCard } from '../../components/macos/GlassCard';
 import { Button } from '../../components/macos/Button';
 import { Badge } from '../../components/macos/UIElements';
 import { Window } from '../../components/macos/Window';
+import { useTheme } from '../../context/ThemeContext';
+import ReaderCard from '../../components/pinui/ReaderCard';
+import Chips from '../../components/pinui/Chips';
+import ReportContentModal, { getReportedIds } from '../../components/public-web/ReportContentModal';
 import { 
   mockResources, 
   resourceCategories, 
@@ -50,9 +55,11 @@ import {
 
 export const KnowledgePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { theme } = useTheme();
 
-  const [activeMode, setActiveMode] = useState('magazine');
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const [activeMode, setActiveMode] = useState(() => (location.state?.category ? 'catalog' : 'magazine'));
+  const [selectedCategory, setSelectedCategory] = useState(() => location.state?.category || 'Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('Tất cả');
@@ -61,6 +68,8 @@ export const KnowledgePage = () => {
   const [toastMessage, setToastMessage] = useState(null);
   const [copiedSnippetId, setCopiedSnippetId] = useState(null);
   const [expandedQnaId, setExpandedQnaId] = useState('qna-1');
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportedIds, setReportedIds] = useState(() => getReportedIds());
 
   const [savedResources, setSavedResources] = useState(() => {
     try {
@@ -284,6 +293,24 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
               </div>
 
               <div className="space-y-6">
+                {mockProjectShowcases[0] && (
+                  <div className="rounded-3xl border border-border bg-card p-4 shadow-sm overflow-hidden flex flex-col items-center">
+                    <ReaderCard
+                      theme={theme === 'dark' ? 'dark' : 'light'}
+                      title={mockProjectShowcases[0].title}
+                      cardTitleLines={['Hồ Sơ Nổi Bật', 'Liquid Reader']}
+                      subtitle={`${mockProjectShowcases[0].author.name} · ${mockProjectShowcases[0].author.role}`}
+                      chapterLabel="Project Showcase · PinUI ReaderCard"
+                      openLabel="Mở Đọc Chi Tiết"
+                      leadParagraph={mockProjectShowcases[0].summary}
+                      resumeHighlight={mockProjectShowcases[0].takeaways?.[0] || 'Cấu trúc mã nguồn sạch chuẩn mực từ SOURCEOFKNOWLEDGE.'}
+                      bodyParagraphs={mockProjectShowcases[0].takeaways || []}
+                      forkLabel="Fork Dự Án Vào Workspace"
+                      onFork={() => handleForkProject(mockProjectShowcases[0])}
+                    />
+                  </div>
+                )}
+
                 {mockProjectShowcases.map((project) => (
                   <GlassCard 
                     key={project.id}
@@ -344,12 +371,12 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                    <div className="p-4 rounded-2xl bg-muted/60 border border-border space-y-2">
                       <p className="text-[11px] font-mono uppercase tracking-wider text-foreground font-semibold flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-ff-jade" />
                         Điểm Sáng Kỹ Thuật (Key Takeaways):
                       </p>
-                      <ul className="space-y-1.5 text-xs text-neutral-300">
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
                         {project.takeaways.map((point, pIdx) => (
                           <li key={pIdx} className="flex items-start gap-2">
                             <span className="text-foreground mt-0.5">•</span>
@@ -359,11 +386,18 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                       </ul>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/10">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border">
                       <span className="text-[11px] font-mono text-muted-foreground">
                         Sẵn sàng thử nghiệm trong Arena Studio
                       </span>
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setReportTarget({ id: project.id, title: project.title })}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card text-xs text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                        >
+                          <Flag className="w-3.5 h-3.5" /> Báo cáo
+                        </button>
                         <Button 
                           variant="primary" 
                           size="md" 
@@ -630,9 +664,9 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-                <span className="font-medium text-neutral-300">Danh mục tài nguyên ({STANDARDIZED_CATEGORIES.length}):</span>
+                <span className="font-medium text-foreground">Danh mục tài nguyên ({STANDARDIZED_CATEGORIES.length}) · PinUI 3D Chips:</span>
                 {(selectedCategory !== 'Tất cả' || selectedStatus !== 'Tất cả' || selectedTags.length > 0 || showSavedOnly) && (
                   <button
                     onClick={clearAllFilters}
@@ -643,6 +677,16 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                   </button>
                 )}
               </div>
+
+              <div className="p-4 rounded-2xl border border-border bg-card overflow-x-auto">
+                <Chips
+                  theme={theme === 'dark' ? 'dark' : 'light'}
+                  rows={2}
+                  defaultValue={selectedCategory === 'Tất cả' ? null : selectedCategory}
+                  onChange={(val) => setSelectedCategory(val || 'Tất cả')}
+                />
+              </div>
+
               <div className="flex flex-wrap items-center gap-2">
                 {resourceCategories.map((cat) => {
                   const isSelected = selectedCategory === cat;
@@ -657,12 +701,12 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                       className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                         isSelected
                           ? 'bg-foreground text-background font-semibold shadow-sm'
-                          : 'liquid-glass text-neutral-300 hover:text-foreground'
+                          : 'liquid-glass text-muted-foreground hover:text-foreground'
                       }`}
                     >
                       <span>{cat}</span>
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isSelected ? 'bg-black/15 text-black' : 'bg-white/10 text-muted-foreground'
+                        isSelected ? 'bg-background/20 text-background' : 'bg-muted text-muted-foreground'
                       }`}>
                         {count}
                       </span>
@@ -683,7 +727,7 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                     className={`px-2.5 py-1 rounded-lg text-xs transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-foreground text-background font-semibold'
-                        : 'bg-white/5 text-muted-foreground hover:text-foreground border border-white/10'
+                        : 'bg-card text-muted-foreground hover:text-foreground border border-border'
                     }`}
                   >
                     {status}
@@ -696,7 +740,7 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                 className={`ml-auto px-3 py-1 rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
                   showSavedOnly 
                     ? 'bg-foreground border-foreground text-background font-semibold' 
-                    : 'bg-white/5 border-white/10 text-neutral-300 hover:text-foreground'
+                    : 'bg-card border-border text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Bookmark className="w-3 h-3" fill={showSavedOnly ? 'currentColor' : 'none'} />
@@ -758,15 +802,44 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
           </div>
 
           {filteredResources.length === 0 ? (
-            <div className="text-center py-16 p-8 rounded-2xl bg-card border border-border space-y-3 max-w-lg mx-auto">
+            <div className="text-center py-14 p-8 rounded-3xl bg-card border border-border space-y-4 max-w-xl mx-auto">
               <BookOpen className="w-10 h-10 text-muted-foreground mx-auto" />
               <h3 className="text-lg font-sans font-semibold text-foreground">Không tìm thấy tài nguyên phù hợp</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Thử thay đổi từ khóa tìm kiếm, bỏ bớt các bộ lọc thẻ hoặc chuyển về danh mục "Tất cả".
+                Gợi ý nới lỏng bộ lọc nhanh (LucianLabs #092) để khôi phục kết quả ngay lập tức:
               </p>
-              <Button variant="secondary" size="sm" onClick={clearAllFilters} className="mt-2">
-                Đặt lại bộ lọc
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="px-3 py-1.5 rounded-full border border-border bg-background text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
+                  >
+                    Xoá từ khoá "{searchQuery}"
+                  </button>
+                )}
+                {selectedTags.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTags([])}
+                    className="px-3 py-1.5 rounded-full border border-border bg-background text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
+                  >
+                    Bỏ {selectedTags.length} thẻ đang chọn
+                  </button>
+                )}
+                {selectedCategory !== 'Tất cả' && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategory('Tất cả')}
+                    className="px-3 py-1.5 rounded-full border border-border bg-background text-xs font-medium text-foreground hover:bg-muted cursor-pointer"
+                  >
+                    Mở lại cả 8 danh mục
+                  </button>
+                )}
+                <Button variant="primary" size="sm" onClick={clearAllFilters}>
+                  Đặt lại tất cả
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -783,7 +856,14 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                         <Badge variant="gold" size="xs">
                           {res.category}
                         </Badge>
-                        {renderVerificationBadge(res.verificationStatus)}
+                        <div className="flex items-center gap-1.5">
+                          {reportedIds.includes(res.id) && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/30 font-semibold">
+                              Đang rà soát
+                            </span>
+                          )}
+                          {renderVerificationBadge(res.verificationStatus)}
+                        </div>
                       </div>
 
                       <div>
@@ -858,19 +938,30 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                      <button
-                        onClick={() => toggleSave(res.id, res.name)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
-                          isSaved 
-                            ? 'bg-white/15 border-white/35 text-foreground font-semibold' 
-                            : 'bg-white/5 border-white/10 text-muted-foreground hover:text-foreground hover:bg-white/10'
-                        }`}
-                        title={isSaved ? 'Đã lưu trong bộ sưu tập' : 'Lưu vào bộ sưu tập'}
-                      >
-                        <Bookmark className="w-3.5 h-3.5" fill={isSaved ? 'currentColor' : 'none'} />
-                        <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
-                      </button>
+                    <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => toggleSave(res.id, res.name)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
+                            isSaved 
+                              ? 'bg-muted border-foreground/30 text-foreground font-semibold' 
+                              : 'bg-card border-border text-muted-foreground hover:text-foreground hover:bg-muted'
+                          }`}
+                          title={isSaved ? 'Đã lưu trong bộ sưu tập' : 'Lưu vào bộ sưu tập'}
+                        >
+                          <Bookmark className="w-3.5 h-3.5" fill={isSaved ? 'currentColor' : 'none'} />
+                          <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setReportTarget({ id: res.id, title: res.name })}
+                          className="p-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-rose-500 transition cursor-pointer"
+                          title="Báo cáo nội dung / liên kết hỏng"
+                          aria-label={`Báo cáo ${res.name}`}
+                        >
+                          <Flag className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
 
                       <Button
                         variant="primary"
@@ -1007,6 +1098,17 @@ Hãy phân tích và viết mã nguồn mẫu để áp dụng trực tiếp tà
           </div>
         </div>
       )}
+
+      <ReportContentModal
+        open={Boolean(reportTarget)}
+        targetId={reportTarget?.id || ''}
+        targetTitle={reportTarget?.title || ''}
+        onClose={() => setReportTarget(null)}
+        onSubmitted={(id) => {
+          setReportedIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+          showToast('Đã gửi báo cáo kiểm duyệt cho mục đã chọn.');
+        }}
+      />
     </div>
   );
 };

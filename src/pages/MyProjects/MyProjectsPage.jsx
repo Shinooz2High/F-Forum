@@ -9,10 +9,14 @@ import {
 import { GlassCard } from '../../components/macos/GlassCard';
 import { Button } from '../../components/macos/Button';
 import { mockProjects } from '../../data/mockProjects';
+import { useTheme } from '../../context/ThemeContext';
+import FileBox from '../../components/pinui/FileBox';
 
 export const MyProjectsPage = () => {
+  const { theme } = useTheme();
   const [activeFilter, setActiveFilter] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
+  const [vaultHint, setVaultHint] = useState('Nhấn vào bất kỳ ngăn hồ sơ PinUI FileBox để lọc nhanh dự án.');
   const navigate = useNavigate();
 
   const statusFilters = ['Tất cả', 'Ready to Export', 'Building', 'Needs Review', 'Draft'];
@@ -47,6 +51,53 @@ export const MyProjectsPage = () => {
             Tạo Dự Án Mới
           </Button>
         </Link>
+      </div>
+
+      {/* PinUI FileBox Interactive Project Vault */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center rounded-3xl border border-border bg-card p-6 shadow-sm">
+        <div className="lg:col-span-5 flex items-center justify-center overflow-hidden rounded-2xl bg-background/60 border border-border p-3 min-h-[280px]">
+          <FileBox
+            theme={theme === 'dark' ? 'dark' : 'light'}
+            onPull={({ color }) => {
+              const statusMap = {
+                green: 'Ready to Export',
+                beige: 'Draft',
+                pink: 'Needs Review',
+                orange: 'Building',
+              };
+              const picked = statusMap[color] || 'Tất cả';
+              setActiveFilter(picked);
+              setVaultHint(`Đã lọc nhanh nhóm dự án "${picked}" từ ngăn hồ sơ màu ${color}.`);
+            }}
+          />
+        </div>
+        <div className="lg:col-span-7 space-y-3">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-blue-600 dark:text-blue-400 font-semibold">
+            PinUI Physical FileBox Vault
+          </span>
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+            Kho Hồ Sơ Dự Án Chống Thất Lạc
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            {vaultHint}
+          </p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            {statusFilters.map((st) => (
+              <button
+                key={`vault-${st}`}
+                type="button"
+                onClick={() => setActiveFilter(st)}
+                className={`px-3 py-1 rounded-full text-xs border transition cursor-pointer ${
+                  activeFilter === st
+                    ? 'bg-foreground text-background border-foreground font-semibold'
+                    : 'bg-background border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -102,13 +153,13 @@ export const MyProjectsPage = () => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-black/70 border border-white/10 text-[11px] space-y-1 font-mono">
-                <p className="text-neutral-300">Mục tiêu: {project.blueprint.goal}</p>
+              <div className="p-3 rounded-xl bg-muted/60 border border-border text-[11px] space-y-1 font-mono">
+                <p className="text-foreground">Mục tiêu: {project.blueprint.goal}</p>
                 <p className="text-muted-foreground">Đối tượng: {project.blueprint.audience}</p>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+            <div className="pt-3 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
                 <span>{project.filesCount} tệp</span>
                 <span>·</span>

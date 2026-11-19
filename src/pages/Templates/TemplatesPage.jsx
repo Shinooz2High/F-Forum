@@ -95,9 +95,9 @@ export const TemplatesPage = () => {
                 </p>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-white/10">
+              <div className="space-y-1.5 pt-2 border-t border-border">
                 {tpl.features.slice(0, 3).map((f, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-[11px] text-neutral-300">
+                  <div key={idx} className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     <Check className="w-3.5 h-3.5 text-ff-jade shrink-0" />
                     <span className="truncate">{f}</span>
                   </div>
@@ -132,7 +132,7 @@ export const TemplatesPage = () => {
       {/* Template Detail Modal */}
       {previewTemplate && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setPreviewTemplate(null)}
         >
           <div 
@@ -143,13 +143,13 @@ export const TemplatesPage = () => {
               title={previewTemplate.vietnameseTitle} 
               subtitle={previewTemplate.category}
               onClose={() => setPreviewTemplate(null)}
-              className="bg-black border-border"
+              className="bg-card border-border"
             >
               <div className="p-6 space-y-6">
                 <img 
                   src={previewTemplate.previewImage} 
                   alt={previewTemplate.vietnameseTitle}
-                  className="w-full h-56 rounded-xl object-cover border border-white/10" 
+                  className="w-full h-56 rounded-xl object-cover border border-border" 
                 />
 
                 <div className="space-y-2">
@@ -159,7 +159,7 @@ export const TemplatesPage = () => {
                     </h2>
                     <span className="text-xs text-muted-foreground font-mono">Đã dùng: {previewTemplate.usesCount} lần</span>
                   </div>
-                  <p className="text-sm text-neutral-300 font-sans leading-relaxed">
+                  <p className="text-sm text-muted-foreground font-sans leading-relaxed">
                     {previewTemplate.description}
                   </p>
                 </div>
@@ -170,7 +170,7 @@ export const TemplatesPage = () => {
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {previewTemplate.features.map((f, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-neutral-200 p-2 rounded-lg bg-white/5 border border-white/5">
+                      <div key={i} className="flex items-start gap-2 text-xs text-foreground p-2 rounded-lg bg-muted/60 border border-border">
                         <Check className="w-4 h-4 text-ff-jade shrink-0 mt-0.5" />
                         <span>{f}</span>
                       </div>
@@ -189,7 +189,7 @@ export const TemplatesPage = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
+                <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
                   <Button variant="ghost" size="md" onClick={() => setPreviewTemplate(null)}>
                     Đóng Lại
                   </Button>

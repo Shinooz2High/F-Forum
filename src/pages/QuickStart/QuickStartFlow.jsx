@@ -62,6 +62,7 @@ export const QuickStartFlow = () => {
     navigate('/workspace', {
       state: {
         templateTitle: formData.projectName,
+        autoSubmit: true,
         initialPrompt: `Tạo website theo Prompt Blueprint:
 - Tên dự án: ${formData.projectName}
 - Mục tiêu: ${formData.goal}
@@ -113,7 +114,7 @@ export const QuickStartFlow = () => {
                 value={formData.projectName}
                 onChange={e => setFormData({ ...formData, projectName: e.target.value })}
                 placeholder="Ví dụ: CLB Sáng Tạo Trẻ FPT..."
-                className="w-full px-4 py-3 rounded-xl bg-black border border-border text-foreground text-sm focus:outline-none focus:border-white"
+                className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
           )}
@@ -134,7 +135,7 @@ export const QuickStartFlow = () => {
                 value={formData.goal}
                 onChange={e => setFormData({ ...formData, goal: e.target.value })}
                 placeholder="Ví dụ: Giới thiệu CLB và thu hút hơn 100 sinh viên nộp đơn tuyển thành viên..."
-                className="w-full px-4 py-3 rounded-xl bg-black border border-border text-foreground text-sm focus:outline-none focus:border-white"
+                className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
           )}
@@ -155,7 +156,7 @@ export const QuickStartFlow = () => {
                 value={formData.audience}
                 onChange={e => setFormData({ ...formData, audience: e.target.value })}
                 placeholder="Ví dụ: Học sinh THPT và sinh viên năm nhất..."
-                className="w-full px-4 py-3 rounded-xl bg-black border border-border text-foreground text-sm focus:outline-none focus:border-white"
+                className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
           )}
@@ -241,7 +242,7 @@ export const QuickStartFlow = () => {
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-black border border-border space-y-3 font-mono text-xs text-neutral-300">
+              <div className="p-4 rounded-xl bg-muted/60 border border-border space-y-3 font-mono text-xs text-foreground">
                 <div>
                   <span className="text-muted-foreground">Tên dự án:</span>{' '}
                   <span className="text-foreground font-bold">{formData.projectName}</span>
@@ -254,7 +255,7 @@ export const QuickStartFlow = () => {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Các khối nội dung:</span>
-                  <ul className="list-disc pl-5 mt-1 space-y-0.5 text-neutral-400">
+                  <ul className="list-disc pl-5 mt-1 space-y-0.5 text-muted-foreground">
                     {formData.sections.map((s, idx) => <li key={idx}>{s}</li>)}
                   </ul>
                 </div>
@@ -265,7 +266,7 @@ export const QuickStartFlow = () => {
             </div>
           )}
 
-          <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+          <div className="pt-4 border-t border-border flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"

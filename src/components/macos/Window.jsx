@@ -13,9 +13,9 @@ export const Window = ({
   variant = 'default' 
 }) => {
   return (
-    <div className={`rounded-2xl overflow-hidden bg-card/90 border border-border shadow-macos-window backdrop-blur-xl transition-all duration-300 ${className}`}>
+    <div className={`rounded-2xl overflow-hidden bg-card/95 border border-border shadow-macos-window-light dark:shadow-macos-window backdrop-blur-xl transition-all duration-300 ${className}`}>
       {/* Window Title Bar */}
-      <div className="h-10 px-4 flex items-center justify-between border-b border-white/10 bg-white/[0.02] select-none backdrop-blur-md">
+      <div className="h-10 px-4 flex items-center justify-between border-b border-border bg-muted/40 select-none backdrop-blur-md">
         {/* Left: Traffic Lights */}
         <div className="flex items-center gap-2 w-20">
           {trafficLights && (
@@ -47,7 +47,7 @@ export const Window = ({
 
         {/* Center: Window Title */}
         <div className="flex-1 text-center truncate px-2">
-          <span className="text-xs font-medium text-neutral-200 font-sans tracking-wide">
+          <span className="text-xs font-medium text-foreground font-sans tracking-wide">
             {title}
           </span>
           {subtitle && (
