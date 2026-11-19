@@ -5,51 +5,36 @@ import {
   Search, 
   Sparkles, 
   ArrowRight, 
-  Globe, 
   Code2, 
   Layers, 
-  ShieldCheck, 
-  SlidersHorizontal,
-  Flame,
   Laptop,
   Smartphone,
-  Eye,
   ExternalLink,
   RotateCcw,
   BookOpen,
   FolderGit2,
-  FileCode,
   Cpu,
   Check,
-  Copy,
-  Terminal,
-  Bookmark,
-  Zap,
-  BarChart2
+  Copy
 } from 'lucide-react';
-import { GlassCard } from '../../components/macos/GlassCard';
 import { Button } from '../../components/macos/Button';
 import { Badge } from '../../components/macos/UIElements';
 import { Window } from '../../components/macos/Window';
 import { mockTemplates } from '../../data/mockTemplates';
-import { mockResources, STANDARDIZED_CATEGORIES } from '../../data/mockResources';
+import { mockResources } from '../../data/mockResources';
 
 export const ExplorePage = () => {
   const navigate = useNavigate();
 
-  // Mode: 'templates' (Split Stage 60/40) or 'resources' (Bento Flow)
   const [viewMode, setViewMode] = useState('templates'); 
   const [selectedStyle, setSelectedStyle] = useState('Tất cả');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Active template for Sticky Live Stage (Right 40%)
   const [activeTemplate, setActiveTemplate] = useState(mockTemplates[0]);
-  const [liveStageDevice, setLiveStageDevice] = useState('desktop'); // 'desktop' | 'mobile'
+  const [liveStageDevice, setLiveStageDevice] = useState('desktop');
   const [liveCountdown, setLiveCountdown] = useState(12);
   const [copiedCodeId, setCopiedCodeId] = useState(null);
-
-  // Floating dock collapse on scroll
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -62,7 +47,6 @@ export const ExplorePage = () => {
 
   const designStyles = ['Tất cả', 'Cyber-Academic', 'macOS Sonoma', 'Minimalist Bento', 'Dark Elegance'];
 
-  // Filter templates
   const filteredTemplates = mockTemplates.filter(t => {
     const matchStyle = selectedStyle === 'Tất cả' || t.designStyle === selectedStyle;
     const matchQuery = !searchQuery.trim() || 
@@ -72,7 +56,6 @@ export const ExplorePage = () => {
     return matchStyle && matchQuery;
   });
 
-  // Filter resources for Bento Stream
   const filteredResources = mockResources.filter(r => {
     const matchCat = selectedCategory === 'Tất cả' || r.category === selectedCategory;
     const matchQuery = !searchQuery.trim() || 
@@ -109,34 +92,34 @@ export const ExplorePage = () => {
   return (
     <div className="space-y-8 pb-20">
       {/* Top Header */}
-      <div className="text-center max-w-3xl mx-auto space-y-2 pt-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-ff-gold/30 bg-ff-gold/10 text-ff-gold-light text-xs font-medium">
-          <Compass className="w-3.5 h-3.5" />
+      <div className="text-center max-w-3xl mx-auto space-y-2.5 pt-2">
+        <div className="liquid-glass inline-flex items-center gap-2 px-3 py-1 rounded-full text-muted-foreground text-xs font-medium">
+          <Compass className="w-3.5 h-3.5 text-foreground" />
           <span>Interactive Showcase Studio · Sân Khấu Khám Phá</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-neutral-100">
-          Xưởng Trưng Bày & Thử Nghiệm Tương Tác
+        <h1 className="text-3xl sm:text-5xl font-sans font-medium tracking-[-1.5px] text-foreground">
+          Xưởng trưng bày <span className="font-serif italic font-normal">Showcase</span> & Bento
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-400">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Chuyển đổi giữa Kho Template UI/UX bất đối xứng và Dòng chảy Bento 8 nhóm tài nguyên chuẩn hóa.
         </p>
       </div>
 
       {/* ================= FLOATING COMMAND DOCK ================= */}
       <div 
-        className={`sticky top-12 z-30 transition-all duration-300 max-w-5xl mx-auto px-2 ${
+        className={`sticky top-16 z-30 transition-all duration-300 max-w-5xl mx-auto px-2 ${
           isScrolled ? 'py-1' : 'py-2'
         }`}
       >
-        <div className="glass-dock rounded-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xl border border-white/15 bg-neutral-950/85 backdrop-blur-2xl">
-          {/* View Mode Switcher: Templates vs Resources */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-900 border border-white/10 text-xs">
+        <div className="liquid-glass bg-black/85 rounded-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-dock">
+          {/* View Mode Switcher */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-black border border-border text-xs">
             <button
               onClick={() => setViewMode('templates')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                 viewMode === 'templates'
-                  ? 'bg-ff-gold text-black shadow-md'
-                  : 'text-neutral-400 hover:text-white'
+                  ? 'bg-foreground text-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -146,8 +129,8 @@ export const ExplorePage = () => {
               onClick={() => setViewMode('resources')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                 viewMode === 'resources'
-                  ? 'bg-ff-gold text-black shadow-md'
-                  : 'text-neutral-400 hover:text-white'
+                  ? 'bg-foreground text-background shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
@@ -155,19 +138,19 @@ export const ExplorePage = () => {
             </button>
           </div>
 
-          {/* Real-time Search input */}
+          {/* Search Input */}
           <div className="relative flex-1 min-w-[200px] max-w-xs">
-            <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={viewMode === 'templates' ? 'Tìm mẫu theo tên, phong cách...' : 'Tìm tài nguyên, tech, tag...'}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-neutral-900/80 border border-white/10 text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-ff-gold"
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-black border border-border text-xs text-foreground placeholder-neutral-500 focus:outline-none focus:border-white"
             />
           </div>
 
-          {/* Quick Filters / Pill strip */}
+          {/* Quick Filters Pill Strip */}
           <div className="hidden md:flex items-center gap-1.5 overflow-x-auto text-xs">
             {viewMode === 'templates' ? (
               designStyles.map(st => (
@@ -176,8 +159,8 @@ export const ExplorePage = () => {
                   onClick={() => setSelectedStyle(st)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer ${
                     selectedStyle === st 
-                      ? 'bg-white/20 text-ff-gold-light font-bold border border-ff-gold/30' 
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-foreground text-background font-semibold' 
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {st}
@@ -190,8 +173,8 @@ export const ExplorePage = () => {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer ${
                     selectedCategory === cat 
-                      ? 'bg-white/20 text-ff-gold-light font-bold border border-ff-gold/30' 
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-foreground text-background font-semibold' 
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {cat}
@@ -205,9 +188,9 @@ export const ExplorePage = () => {
       {/* ================= VIEW MODE 1: SPLIT STAGE 60/40 FOR TEMPLATES ================= */}
       {viewMode === 'templates' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* LEFT 60%: Staggered Cascade Waterfall List (7 cols) */}
+          {/* LEFT 60%: Staggered Cascade Waterfall List */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
+            <div className="flex items-center justify-between text-xs font-mono text-muted-foreground px-1">
               <span>Danh sách mẫu xếp so le ({filteredTemplates.length})</span>
               <span>Di chuột hoặc click để xem trước trực tiếp</span>
             </div>
@@ -215,7 +198,6 @@ export const ExplorePage = () => {
             <div className="space-y-4">
               {filteredTemplates.map((template) => {
                 const isSelected = activeTemplate.id === template.id;
-                const isLarge = template.cardFormat === 'large';
                 const isWide = template.cardFormat === 'wide';
                 const isVertical = template.cardFormat === 'vertical';
 
@@ -224,35 +206,33 @@ export const ExplorePage = () => {
                     key={template.id}
                     onMouseEnter={() => setActiveTemplate(template)}
                     onClick={() => setActiveTemplate(template)}
-                    className={`rounded-2xl transition-all duration-300 border cursor-pointer overflow-hidden p-4 group ${
+                    className={`rounded-2xl transition-all duration-300 border cursor-pointer overflow-hidden p-4 group bg-card/90 ${
                       isSelected 
-                        ? 'glass-panel border-ff-gold shadow-gold-glow/20 ring-1 ring-ff-gold/40' 
-                        : 'glass-panel border-white/10 hover:border-ff-gold/40'
+                        ? 'border-white shadow-gold-glow ring-1 ring-white/25' 
+                        : 'border-border hover:border-white/35'
                     }`}
                   >
-                    {/* Asymmetric layout depending on cardFormat */}
                     {isWide ? (
-                      // WIDE STRIP (Horizontal Hero / Navbar)
                       <div className="flex flex-col sm:flex-row gap-4 items-center">
-                        <div className="w-full sm:w-44 h-24 rounded-xl overflow-hidden relative shrink-0">
+                        <div className="w-full sm:w-44 h-24 rounded-xl overflow-hidden relative shrink-0 bg-black">
                           <img 
                             src={template.previewImage} 
                             alt={template.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300" 
                           />
-                          <span className="absolute top-1.5 left-1.5 text-[9px] px-2 py-0.5 rounded-full bg-black/80 text-ff-gold font-mono">
+                          <span className="absolute top-1.5 left-1.5 text-[9px] px-2 py-0.5 rounded-full bg-black/85 text-foreground font-mono border border-white/15">
                             Banner Ngang
                           </span>
                         </div>
                         <div className="flex-1 space-y-1.5 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-ff-gold font-mono uppercase">{template.designStyle}</span>
-                            <span className="text-[10px] text-neutral-400">★ {template.rating}</span>
+                            <span className="text-[10px] text-muted-foreground font-mono uppercase">{template.designStyle}</span>
+                            <span className="text-[10px] text-foreground font-mono">★ {template.rating}</span>
                           </div>
-                          <h3 className="font-serif font-bold text-base text-neutral-100 group-hover:text-ff-gold-light transition-colors truncate">
+                          <h3 className="font-sans font-semibold text-base text-foreground truncate">
                             {template.vietnameseTitle}
                           </h3>
-                          <p className="text-xs text-neutral-400 line-clamp-1">
+                          <p className="text-xs text-muted-foreground line-clamp-1">
                             {template.description}
                           </p>
                           <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono pt-1">
@@ -261,32 +241,31 @@ export const ExplorePage = () => {
                         </div>
                       </div>
                     ) : isVertical ? (
-                      // VERTICAL CARD (Mobile UI / Flashcards)
                       <div className="flex gap-4 items-center">
-                        <div className="w-20 h-28 rounded-xl overflow-hidden border-2 border-neutral-700 relative shrink-0">
+                        <div className="w-20 h-28 rounded-xl overflow-hidden border border-border relative shrink-0 bg-black">
                           <img 
                             src={template.previewImage} 
                             alt={template.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-300" 
                           />
-                          <span className="absolute top-1 left-1 text-[8px] px-1 rounded bg-black/80 text-ff-gold font-mono">
+                          <span className="absolute top-1 left-1 text-[8px] px-1 rounded bg-black/85 text-foreground font-mono">
                             Mobile
                           </span>
                         </div>
                         <div className="flex-1 space-y-1.5 min-w-0">
                           <div className="flex items-center gap-2">
-                            <Badge variant="rose" size="xs">Mobile Touch</Badge>
-                            <span className="text-[10px] text-neutral-500 font-mono">{template.designStyle}</span>
+                            <Badge variant="gold" size="xs">Mobile Touch</Badge>
+                            <span className="text-[10px] text-muted-foreground font-mono">{template.designStyle}</span>
                           </div>
-                          <h3 className="font-serif font-bold text-base text-neutral-100 group-hover:text-ff-gold-light transition-colors">
+                          <h3 className="font-sans font-semibold text-base text-foreground">
                             {template.vietnameseTitle}
                           </h3>
-                          <p className="text-xs text-neutral-400 line-clamp-2">
+                          <p className="text-xs text-muted-foreground line-clamp-2">
                             {template.description}
                           </p>
                           <div className="flex items-center gap-2 pt-1">
                             {template.techStack.map(ts => (
-                              <span key={ts} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-neutral-400 font-mono">
+                              <span key={ts} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-muted-foreground font-mono">
                                 {ts}
                               </span>
                             ))}
@@ -294,20 +273,19 @@ export const ExplorePage = () => {
                         </div>
                       </div>
                     ) : (
-                      // LARGE FULL LANDING PAGE CARD
                       <div className="space-y-3">
-                        <div className="h-36 sm:h-44 rounded-xl overflow-hidden relative">
+                        <div className="h-36 sm:h-44 rounded-xl overflow-hidden relative bg-black">
                           <img 
                             src={template.previewImage} 
                             alt={template.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" 
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
                           <div className="absolute top-2 left-2 flex items-center gap-2">
-                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-neutral-900/90 text-ff-gold font-mono border border-ff-gold/30">
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-black/85 text-foreground font-mono border border-white/20">
                               Full Landing Page
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/70 text-neutral-300 font-mono">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/75 text-muted-foreground font-mono">
                               {template.designStyle}
                             </span>
                           </div>
@@ -315,12 +293,12 @@ export const ExplorePage = () => {
 
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-serif font-bold text-lg text-neutral-100 group-hover:text-ff-gold-light transition-colors">
+                            <h3 className="font-sans font-semibold text-lg text-foreground">
                               {template.vietnameseTitle}
                             </h3>
-                            <span className="text-xs text-ff-gold font-mono">★ {template.rating}</span>
+                            <span className="text-xs text-foreground font-mono">★ {template.rating}</span>
                           </div>
-                          <p className="text-xs text-neutral-400 leading-relaxed line-clamp-2">
+                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                             {template.description}
                           </p>
                         </div>
@@ -332,31 +310,31 @@ export const ExplorePage = () => {
             </div>
           </div>
 
-          {/* RIGHT 40%: Sticky Live Stage (5 cols) */}
-          <div className="lg:col-span-5 sticky top-28 space-y-4">
+          {/* RIGHT 40%: Sticky Live Stage */}
+          <div className="lg:col-span-5 sticky top-32 space-y-4">
             <Window 
               title={`Live Stage — ${activeTemplate.vietnameseTitle}`}
               subtitle={activeTemplate.demoUrl}
-              className="border-white/20 shadow-2xl bg-neutral-950"
+              className="border-border shadow-2xl bg-black"
               headerRight={
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setLiveStageDevice('desktop')}
-                    className={`p-1 rounded ${liveStageDevice === 'desktop' ? 'bg-ff-gold text-black' : 'text-neutral-400 hover:text-white'}`}
+                    className={`p-1 rounded cursor-pointer ${liveStageDevice === 'desktop' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
                     title="Xem trên Desktop"
                   >
                     <Laptop className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setLiveStageDevice('mobile')}
-                    className={`p-1 rounded ${liveStageDevice === 'mobile' ? 'bg-ff-gold text-black' : 'text-neutral-400 hover:text-white'}`}
+                    className={`p-1 rounded cursor-pointer ${liveStageDevice === 'mobile' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
                     title="Xem trên Mobile"
                   >
                     <Smartphone className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setLiveCountdown(prev => prev + 1)}
-                    className="p-1 rounded text-neutral-400 hover:text-white"
+                    className="p-1 rounded text-muted-foreground hover:text-foreground cursor-pointer"
                     title="Làm mới demo"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -364,37 +342,34 @@ export const ExplorePage = () => {
                 </div>
               }
             >
-              {/* Interactive Mock Browser Body */}
-              <div className="p-4 bg-neutral-950/90 space-y-4">
-                {/* Live Sandbox Container */}
+              <div className="p-4 bg-black/95 space-y-4">
                 <div className={`mx-auto transition-all duration-300 ${
                   liveStageDevice === 'mobile' 
-                    ? 'w-64 rounded-2xl p-3 border-2 border-neutral-700 bg-neutral-900 shadow-xl' 
-                    : 'w-full rounded-xl p-4 border border-ff-gold/25 bg-neutral-900/90'
+                    ? 'w-64 rounded-2xl p-3 border-2 border-border bg-card shadow-xl' 
+                    : 'w-full rounded-xl p-4 border border-border bg-card'
                 }`}>
                   <div className="space-y-3 text-center">
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-ff-gold/15 border border-ff-gold/30 text-ff-gold-light text-[10px] font-mono">
+                    <div className="liquid-glass inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-foreground text-[10px] font-mono">
                       <Sparkles className="w-3 h-3" />
                       <span>{activeTemplate.badge}</span>
                     </div>
 
-                    <h4 className="font-serif font-bold text-lg text-neutral-100">
+                    <h4 className="font-sans font-semibold text-lg text-foreground">
                       {activeTemplate.vietnameseTitle}
                     </h4>
 
-                    <p className="text-[11px] text-neutral-300 line-clamp-2">
+                    <p className="text-[11px] text-muted-foreground line-clamp-2">
                       {activeTemplate.description}
                     </p>
 
-                    {/* Live interactive countdown mock */}
-                    <div className="p-2 rounded-lg bg-black/60 border border-white/5 font-mono text-[10px] text-ff-gold">
+                    <div className="p-2 rounded-lg bg-black border border-white/10 font-mono text-[10px] text-foreground">
                       Countdown: {liveCountdown} Ngày · 08 Giờ · 45 Phút
                     </div>
 
                     <div className="flex justify-center gap-2 pt-1">
                       <button 
                         onClick={() => alert(`Đã kích hoạt thử nghiệm tương tác của mẫu: ${activeTemplate.vietnameseTitle}`)}
-                        className="px-4 py-1.5 rounded-lg bg-ff-gold text-black font-semibold text-xs shadow-md hover:brightness-105 active:scale-95 cursor-pointer"
+                        className="px-4 py-1.5 rounded-full bg-foreground text-background font-semibold text-xs shadow-sm hover:opacity-90 active:scale-95 cursor-pointer"
                       >
                         Tương Tác Thử Nghiệm
                       </button>
@@ -402,32 +377,31 @@ export const ExplorePage = () => {
                   </div>
                 </div>
 
-                {/* Technical Specifications Spec Bar */}
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-2 text-xs font-mono">
+                {/* Spec Bar */}
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2 text-xs font-mono">
                   <div className="flex items-center justify-between text-neutral-300">
-                    <span className="text-neutral-500">Độ phân giải:</span>
+                    <span className="text-muted-foreground">Độ phân giải:</span>
                     <span className="text-ff-jade">{activeTemplate.responsiveScore}</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-300">
-                    <span className="text-neutral-500">Bundle size:</span>
+                    <span className="text-muted-foreground">Bundle size:</span>
                     <span>{activeTemplate.bundleSize} (Vite build)</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-300">
-                    <span className="text-neutral-500">Hiệu năng mượt mà:</span>
-                    <span className="text-ff-gold">{activeTemplate.fps} FPS Canvas</span>
+                    <span className="text-muted-foreground">Hiệu năng mượt mà:</span>
+                    <span className="text-foreground">{activeTemplate.fps} FPS Canvas</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-300">
-                    <span className="text-neutral-500">Phong cách:</span>
+                    <span className="text-muted-foreground">Phong cách:</span>
                     <span>{activeTemplate.designStyle}</span>
                   </div>
                 </div>
 
-                {/* Big Action Button to Workspace */}
                 <Button
                   variant="primary"
                   size="lg"
                   iconRight={ArrowRight}
-                  className="w-full font-serif font-bold tracking-wide"
+                  className="w-full font-semibold tracking-wide"
                   onClick={() => handleLaunchToWorkspace(activeTemplate)}
                 >
                   Đẩy Thẳng Vào Workspace
@@ -441,39 +415,37 @@ export const ExplorePage = () => {
       {/* ================= VIEW MODE 2: BENTO FLOW FOR 8 RESOURCE CATEGORIES ================= */}
       {viewMode === 'resources' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <span>Dòng chảy Bento 8 nhóm tài nguyên ({filteredResources.length} mục)</span>
             <span>Phân hóa theo công năng: Wide Strip, Snippet & Visual</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredResources.map((resource, idx) => {
-              const isWideStrip = resource.category === 'GitHub Repositories' || resource.category === 'Development Tools';
+            {filteredResources.map((resource) => {
+              const isWideStrip = resource.category === 'GitHub Repositories' || resource.category === 'Development Tools' || resource.category === 'Dev Tools';
               const isCodeSnippet = resource.category === 'Prompts' || resource.category === 'Skills & Rules';
-              const isVisual = resource.category === 'UI/UX Resources' || resource.category === 'AI Tools';
 
-              // TYPE 1: WIDE STRIP (GitHub Repos & Dev Tools)
               if (isWideStrip) {
                 return (
                   <div 
                     key={resource.id} 
-                    className="md:col-span-2 lg:col-span-3 rounded-2xl glass-panel p-5 border border-white/10 hover:border-ff-gold/40 transition-all space-y-3"
+                    className="md:col-span-2 lg:col-span-3 rounded-2xl bg-card p-5 border border-border hover:border-white/35 transition-all space-y-3"
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 text-foreground flex items-center justify-center">
                           <FolderGit2 className="w-4 h-4" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-serif font-bold text-base text-neutral-100">
+                            <h3 className="font-sans font-semibold text-base text-foreground">
                               {resource.name}
                             </h3>
                             <Badge variant="jade" size="xs">
-                              {resource.verificationStatus === 'verified' ? 'Đã Kiểm Thử' : 'Đã Xác Minh'}
+                              {resource.verificationStatus || 'Đã Xác Minh'}
                             </Badge>
                           </div>
-                          <span className="text-[11px] text-neutral-500 font-mono">{resource.category}</span>
+                          <span className="text-[11px] text-muted-foreground font-mono">{resource.category}</span>
                         </div>
                       </div>
 
@@ -482,7 +454,7 @@ export const ExplorePage = () => {
                           href={resource.sourceUrl} 
                           target="_blank" 
                           rel="noreferrer"
-                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 text-xs flex items-center gap-1"
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/10 text-xs flex items-center gap-1"
                         >
                           <ExternalLink className="w-3.5 h-3.5" /> Nguồn
                         </a>
@@ -501,63 +473,60 @@ export const ExplorePage = () => {
                       {resource.description}
                     </p>
 
-                    {/* Spec Bar Mini File Tree / Tech spec */}
-                    <div className="p-3 rounded-xl bg-black/60 border border-white/5 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono text-neutral-400">
+                    <div className="p-3 rounded-xl bg-black border border-white/10 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono text-muted-foreground">
                       <div>
-                        <span className="text-neutral-500">Tương thích:</span> <span className="text-ff-gold-light">{resource.compatibility}</span>
+                        <span>Tương thích:</span> <span className="text-foreground">{resource.compatibility}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500">Giấy phép:</span> {resource.license}
+                        <span>Giấy phép:</span> <span className="text-neutral-300">{resource.license}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500">Chi phí:</span> {resource.pricing}
+                        <span>Chi phí:</span> <span className="text-neutral-300">{resource.pricing}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500">Kiểm tra:</span> {resource.lastChecked}
+                        <span>Kiểm tra:</span> <span className="text-neutral-300">{resource.lastChecked}</span>
                       </div>
                     </div>
                   </div>
                 );
               }
 
-              // TYPE 2: CODE SNIPPET CARD (Prompts & Skills/Rules)
               if (isCodeSnippet) {
                 const sampleSnippet = resource.category === 'Prompts' 
-                  ? `PROMPT_BLUEPRINT = {\n  goal: "${resource.name}",\n  audience: "Students & Clubs",\n  format: "macOS Liquid React",\n  output: "Export ZIP"\n};`
-                  : `// .agent/rules/skill.json\n{\n  "name": "${resource.name}",\n  "verified": true,\n  "engine": "Antigravity"\n}`;
+                  ? `PROMPT_BLUEPRINT = {\n  goal: "${resource.name}",\n  audience: "Students & Clubs",\n  format: "Liquid Glass React",\n  output: "Export ZIP"\n};`
+                  : `// .agent/rules/skill.json\n{\n  "name": "${resource.name}",\n  "verified": true,\n  "engine": "F-Forum AI"\n}`;
 
                 return (
                   <div 
                     key={resource.id} 
-                    className="rounded-2xl glass-panel p-5 border border-white/10 hover:border-ff-gold/40 transition-all flex flex-col justify-between space-y-3"
+                    className="rounded-2xl bg-card p-5 border border-border hover:border-white/35 transition-all flex flex-col justify-between space-y-3"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="gold" size="xs">{resource.category}</Badge>
                         <button
                           onClick={() => handleCopyCode(resource.id, sampleSnippet)}
-                          className="text-[11px] text-neutral-400 hover:text-white flex items-center gap-1"
+                          className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 cursor-pointer"
                         >
                           {copiedCodeId === resource.id ? <Check className="w-3.5 h-3.5 text-ff-jade" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{copiedCodeId === resource.id ? 'Đã Chép' : 'Sao Chép'}</span>
                         </button>
                       </div>
 
-                      <h3 className="font-serif font-bold text-base text-neutral-100">
+                      <h3 className="font-sans font-semibold text-base text-foreground">
                         {resource.name}
                       </h3>
-                      <p className="text-xs text-neutral-400 line-clamp-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2">
                         {resource.description}
                       </p>
 
-                      {/* Code Snippet Box */}
-                      <div className="p-3 rounded-xl bg-black/80 font-mono text-[11px] text-amber-300/90 border border-white/5 overflow-x-auto leading-relaxed">
+                      <div className="p-3 rounded-xl bg-black font-mono text-[11px] text-neutral-200 border border-white/10 overflow-x-auto leading-relaxed">
                         <pre>{sampleSnippet}</pre>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-white/5 flex items-center justify-between">
-                      <span className="text-[10px] text-neutral-500 font-mono">{resource.difficulty}</span>
+                    <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-[10px] text-muted-foreground font-mono">{resource.difficulty}</span>
                       <Button 
                         variant="primary" 
                         size="sm"
@@ -570,41 +539,39 @@ export const ExplorePage = () => {
                 );
               }
 
-              // TYPE 3: VISUAL SHOWCASE CARD (UI/UX & AI Tools)
               return (
                 <div 
                   key={resource.id} 
-                  className="rounded-2xl glass-panel p-5 border border-white/10 hover:border-ff-gold/40 transition-all flex flex-col justify-between space-y-3 group"
+                  className="rounded-2xl bg-card p-5 border border-border hover:border-white/35 transition-all flex flex-col justify-between space-y-3 group"
                 >
                   <div className="space-y-3">
-                    <div className="h-28 rounded-xl bg-gradient-to-br from-neutral-900 to-black border border-white/10 relative overflow-hidden flex items-center justify-center">
-                      <div className="absolute inset-0 bg-radial-gradient from-ff-gold/10 to-transparent" />
-                      <Cpu className="w-10 h-10 text-ff-gold group-hover:scale-110 transition-transform duration-300" />
-                      <span className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-black/70 text-ff-gold font-mono">
+                    <div className="h-28 rounded-xl bg-black border border-white/10 relative overflow-hidden flex items-center justify-center">
+                      <Cpu className="w-10 h-10 text-foreground/80 group-hover:scale-110 transition-transform duration-300" />
+                      <span className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-foreground font-mono">
                         {resource.pricing}
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-[10px] text-ff-gold font-mono uppercase">{resource.category}</span>
-                      <h3 className="font-serif font-bold text-base text-neutral-100 mt-0.5">
+                      <span className="text-[10px] text-muted-foreground font-mono uppercase">{resource.category}</span>
+                      <h3 className="font-sans font-semibold text-base text-foreground mt-0.5">
                         {resource.name}
                       </h3>
-                      <p className="text-xs text-neutral-400 line-clamp-2 mt-1">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                         {resource.description}
                       </p>
                     </div>
 
                     <div className="flex flex-wrap gap-1">
                       {resource.tags?.slice(0, 3).map(t => (
-                        <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-white/5 text-neutral-300 font-mono">
+                        <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-300 font-mono">
                           #{t}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between">
                     <span className="text-[10px] text-ff-jade font-mono">● {resource.verificationStatus}</span>
                     <Button 
                       variant="primary" 

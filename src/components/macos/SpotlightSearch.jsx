@@ -28,7 +28,6 @@ export const SpotlightSearch = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Combine searchable items
   const pages = [
     { title: 'Bàn làm việc (Home)', path: '/home', type: 'Trang hệ thống', icon: Sparkles },
     { title: 'Khám phá ý tưởng (Explore)', path: '/explore', type: 'Trang hệ thống', icon: Sparkles },
@@ -101,17 +100,16 @@ export const SpotlightSearch = ({ isOpen, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-start justify-center pt-24 px-4 select-none animate-fadeIn"
+      className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-start justify-center pt-24 px-4 select-none animate-fadeIn"
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-2xl rounded-2xl glass-panel shadow-2xl border border-white/15 overflow-hidden animate-scaleUp"
+        className="w-full max-w-2xl rounded-2xl bg-card/95 backdrop-blur-2xl shadow-2xl border border-border overflow-hidden animate-scaleUp"
         onClick={e => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        {/* Search Input Bar */}
         <div className="relative flex items-center px-4 py-3.5 border-b border-white/10 bg-white/[0.02]">
-          <Search className="w-5 h-5 text-ff-gold mr-3 shrink-0" />
+          <Search className="w-5 h-5 text-foreground mr-3 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -121,22 +119,21 @@ export const SpotlightSearch = ({ isOpen, onClose }) => {
               setSelectedIndex(0);
             }}
             placeholder="Tìm kiếm trang, mẫu website, tài nguyên, dự án..."
-            className="w-full bg-transparent text-base text-neutral-100 placeholder-neutral-500 focus:outline-none"
+            className="w-full bg-transparent text-base text-foreground placeholder-neutral-500 focus:outline-none"
           />
           {query && (
             <button 
               onClick={() => setQuery('')}
-              className="text-neutral-400 hover:text-white p-1"
+              className="text-muted-foreground hover:text-foreground p-1 cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Results List */}
         <div className="max-h-96 overflow-y-auto p-2 divide-y divide-white/5">
           {searchResults.length === 0 ? (
-            <div className="py-12 text-center text-neutral-400 text-sm">
+            <div className="py-12 text-center text-muted-foreground text-sm">
               Không tìm thấy kết quả nào cho "{query}"
             </div>
           ) : (
@@ -149,21 +146,21 @@ export const SpotlightSearch = ({ isOpen, onClose }) => {
                   onClick={() => handleSelect(item)}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                    isSelected ? 'bg-ff-gold/15 border border-ff-gold/30' : 'hover:bg-white/5 border border-transparent'
+                    isSelected ? 'bg-white/10 border border-white/20' : 'hover:bg-white/5 border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-ff-gold text-black' : 'bg-white/5 text-neutral-300'
+                      isSelected ? 'bg-foreground text-background' : 'bg-white/5 text-neutral-300'
                     }`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className={`text-sm font-medium truncate ${isSelected ? 'text-ff-gold-light' : 'text-neutral-200'}`}>
+                      <p className={`text-sm font-medium truncate ${isSelected ? 'text-foreground' : 'text-neutral-200'}`}>
                         {item.title}
                       </p>
                       {item.subtitle && (
-                        <p className="text-xs text-neutral-400 truncate max-w-md">
+                        <p className="text-xs text-muted-foreground truncate max-w-md">
                           {item.subtitle}
                         </p>
                       )}
@@ -171,10 +168,10 @@ export const SpotlightSearch = ({ isOpen, onClose }) => {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 ml-4">
-                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/5 text-neutral-400 border border-white/5">
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/5 text-muted-foreground border border-white/10">
                       {item.category}
                     </span>
-                    {isSelected && <ArrowRight className="w-3.5 h-3.5 text-ff-gold" />}
+                    {isSelected && <ArrowRight className="w-3.5 h-3.5 text-foreground" />}
                   </div>
                 </div>
               );
@@ -182,14 +179,13 @@ export const SpotlightSearch = ({ isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Footer shortcuts */}
-        <div className="px-4 py-2 bg-black/40 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
+        <div className="px-4 py-2 bg-black/60 border-t border-white/10 flex items-center justify-between text-[11px] text-muted-foreground">
           <div className="flex items-center gap-4">
             <span>Dùng <kbd className="px-1 rounded bg-white/10 text-neutral-300">↑</kbd> <kbd className="px-1 rounded bg-white/10 text-neutral-300">↓</kbd> để di chuyển</span>
             <span><kbd className="px-1 rounded bg-white/10 text-neutral-300">Enter</kbd> để chọn</span>
             <span><kbd className="px-1 rounded bg-white/10 text-neutral-300">Esc</kbd> để đóng</span>
           </div>
-          <span className="text-ff-gold font-serif italic">F-Forum Spotlight</span>
+          <span className="text-foreground font-serif italic">F-Forum Spotlight</span>
         </div>
       </div>
     </div>

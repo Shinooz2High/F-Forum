@@ -13,9 +13,9 @@ export const Window = ({
   variant = 'default' 
 }) => {
   return (
-    <div className={`rounded-2xl overflow-hidden glass-panel shadow-macos-window transition-all duration-300 ${className}`}>
-      {/* macOS Window Title Bar */}
-      <div className="h-10 px-4 flex items-center justify-between border-b border-white/5 bg-white/[0.02] select-none backdrop-blur-md">
+    <div className={`rounded-2xl overflow-hidden bg-card/90 border border-border shadow-macos-window backdrop-blur-xl transition-all duration-300 ${className}`}>
+      {/* Window Title Bar */}
+      <div className="h-10 px-4 flex items-center justify-between border-b border-white/10 bg-white/[0.02] select-none backdrop-blur-md">
         {/* Left: Traffic Lights */}
         <div className="flex items-center gap-2 w-20">
           {trafficLights && (
@@ -47,11 +47,11 @@ export const Window = ({
 
         {/* Center: Window Title */}
         <div className="flex-1 text-center truncate px-2">
-          <span className="text-xs font-medium text-neutral-300 font-sans tracking-wide">
+          <span className="text-xs font-medium text-neutral-200 font-sans tracking-wide">
             {title}
           </span>
           {subtitle && (
-            <span className="text-[10px] text-neutral-500 ml-2 font-mono">
+            <span className="text-[10px] text-muted-foreground ml-2 font-mono">
               ({subtitle})
             </span>
           )}
@@ -64,7 +64,7 @@ export const Window = ({
       </div>
 
       {/* Window Body */}
-      <div className="relative">
+      <div className="relative flex-1 flex flex-col min-h-0">
         {children}
       </div>
     </div>

@@ -2,13 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Layers, 
-  Search, 
-  Sparkles, 
   ArrowRight, 
   Check, 
-  Eye, 
-  ExternalLink,
-  X
+  Eye
 } from 'lucide-react';
 import { GlassCard } from '../../components/macos/GlassCard';
 import { Button } from '../../components/macos/Button';
@@ -41,14 +37,14 @@ export const TemplatesPage = () => {
     <div className="space-y-10">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400 text-xs font-medium">
-          <Layers className="w-3.5 h-3.5" />
+        <div className="liquid-glass inline-flex items-center gap-2 px-3 py-1 rounded-full text-muted-foreground text-xs font-medium">
+          <Layers className="w-3.5 h-3.5 text-foreground" />
           <span>Kho Mẫu Dự Án Khởi Đầu</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-neutral-100">
-          Chọn mẫu và tùy biến theo ý bạn
+        <h1 className="text-3xl sm:text-5xl font-sans font-medium tracking-[-1.5px] text-foreground">
+          Kho <span className="font-serif italic font-normal">Templates</span> tuyển chọn
         </h1>
-        <p className="text-sm text-neutral-400">
+        <p className="text-sm text-muted-foreground">
           Các mẫu website và ứng dụng đã được cấu trúc sẵn, tối ưu hóa giao diện và kiểm thử an toàn trước khi bàn giao.
         </p>
       </div>
@@ -59,10 +55,10 @@ export const TemplatesPage = () => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
               selectedCategory === cat
-                ? 'bg-ff-gold text-black font-semibold shadow-md'
-                : 'glass-panel text-neutral-300 hover:text-white'
+                ? 'bg-foreground text-background font-semibold shadow-sm'
+                : 'liquid-glass text-muted-foreground hover:text-foreground'
             }`}
           >
             {cat}
@@ -74,35 +70,32 @@ export const TemplatesPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((tpl) => (
           <GlassCard key={tpl.id} className="p-0 overflow-hidden flex flex-col justify-between group">
-            {/* Thumbnail */}
-            <div className="relative h-48 overflow-hidden bg-neutral-900">
+            <div className="relative h-48 overflow-hidden bg-black">
               <img 
                 src={tpl.previewImage} 
                 alt={tpl.vietnameseTitle}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500 opacity-85" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
-              <span className="absolute top-3 left-3 text-[10px] px-2.5 py-1 rounded-full bg-neutral-900/80 backdrop-blur-md text-ff-gold-light border border-ff-gold/30 font-medium">
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+              <span className="absolute top-3 left-3 text-[10px] px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md text-foreground border border-white/20 font-medium">
                 {tpl.badge}
               </span>
-              <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-md bg-black/60 text-neutral-300 font-mono">
+              <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-md bg-black/75 text-muted-foreground font-mono">
                 {tpl.difficulty}
               </span>
             </div>
 
-            {/* Content */}
             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
               <div className="space-y-2">
-                <h3 className="font-serif font-bold text-xl text-neutral-100 group-hover:text-ff-gold-light transition-colors">
+                <h3 className="font-sans font-semibold text-lg text-foreground">
                   {tpl.vietnameseTitle}
                 </h3>
-                <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                   {tpl.description}
                 </p>
               </div>
 
-              {/* Feature bullets */}
-              <div className="space-y-1.5 pt-2 border-t border-white/5">
+              <div className="space-y-1.5 pt-2 border-t border-white/10">
                 {tpl.features.slice(0, 3).map((f, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-[11px] text-neutral-300">
                     <Check className="w-3.5 h-3.5 text-ff-jade shrink-0" />
@@ -111,7 +104,6 @@ export const TemplatesPage = () => {
                 ))}
               </div>
 
-              {/* Action buttons */}
               <div className="pt-2 flex items-center gap-2">
                 <Button 
                   variant="secondary" 
@@ -140,7 +132,7 @@ export const TemplatesPage = () => {
       {/* Template Detail Modal */}
       {previewTemplate && (
         <div 
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setPreviewTemplate(null)}
         >
           <div 
@@ -151,7 +143,7 @@ export const TemplatesPage = () => {
               title={previewTemplate.vietnameseTitle} 
               subtitle={previewTemplate.category}
               onClose={() => setPreviewTemplate(null)}
-              className="bg-neutral-950 border-white/20"
+              className="bg-black border-border"
             >
               <div className="p-6 space-y-6">
                 <img 
@@ -162,10 +154,10 @@ export const TemplatesPage = () => {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-serif font-bold text-neutral-100">
+                    <h2 className="text-2xl font-sans font-semibold text-foreground">
                       {previewTemplate.vietnameseTitle}
                     </h2>
-                    <span className="text-xs text-ff-gold font-mono">Đã dùng: {previewTemplate.usesCount} lần</span>
+                    <span className="text-xs text-muted-foreground font-mono">Đã dùng: {previewTemplate.usesCount} lần</span>
                   </div>
                   <p className="text-sm text-neutral-300 font-sans leading-relaxed">
                     {previewTemplate.description}
@@ -173,12 +165,12 @@ export const TemplatesPage = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-neutral-400">
+                  <h4 className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
                     Tính Năng Đã Tích Hợp
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {previewTemplate.features.map((f, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs text-neutral-200 p-2 rounded-lg bg-white/5">
+                      <div key={i} className="flex items-start gap-2 text-xs text-neutral-200 p-2 rounded-lg bg-white/5 border border-white/5">
                         <Check className="w-4 h-4 text-ff-jade shrink-0 mt-0.5" />
                         <span>{f}</span>
                       </div>
@@ -187,7 +179,7 @@ export const TemplatesPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-neutral-400">
+                  <h4 className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
                     Công Nghệ Sử Dụng
                   </h4>
                   <div className="flex flex-wrap gap-2">

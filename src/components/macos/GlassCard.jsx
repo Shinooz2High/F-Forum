@@ -11,8 +11,8 @@ export const GlassCard = ({
   return (
     <div
       onClick={onClick}
-      className={`glass-card rounded-2xl p-6 ${
-        featured ? 'border-ff-gold/40 shadow-gold-glow/20' : ''
+      className={`bg-card/85 backdrop-blur-md border border-border/75 hover:border-white/30 rounded-2xl p-6 transition-all duration-300 ${
+        featured ? 'border-white/35 shadow-gold-glow' : ''
       } ${
         interactive ? 'cursor-pointer' : ''
       } ${className}`}

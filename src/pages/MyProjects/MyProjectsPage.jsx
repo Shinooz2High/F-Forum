@@ -4,20 +4,10 @@ import {
   FolderGit2, 
   Search, 
   Plus, 
-  Terminal, 
-  Sparkles, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  ArrowRight,
-  MoreVertical,
-  Trash2,
-  Share2
+  Terminal
 } from 'lucide-react';
 import { GlassCard } from '../../components/macos/GlassCard';
 import { Button } from '../../components/macos/Button';
-import { Badge } from '../../components/macos/UIElements';
-import { Window } from '../../components/macos/Window';
 import { mockProjects } from '../../data/mockProjects';
 
 export const MyProjectsPage = () => {
@@ -40,14 +30,14 @@ export const MyProjectsPage = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-medium mb-2">
-            <FolderGit2 className="w-3.5 h-3.5" />
+          <div className="liquid-glass inline-flex items-center gap-2 px-3 py-1 rounded-full text-muted-foreground text-xs font-medium mb-2">
+            <FolderGit2 className="w-3.5 h-3.5 text-foreground" />
             <span>Không Gian Dự Án Cá Nhân & CLB</span>
           </div>
-          <h1 className="text-3xl font-serif font-bold text-neutral-100">
-            Dự án của bạn ({mockProjects.length})
+          <h1 className="text-3xl sm:text-4xl font-sans font-medium tracking-[-1.5px] text-foreground">
+            Quản lý <span className="font-serif italic font-normal">Projects</span> ({mockProjects.length})
           </h1>
-          <p className="text-xs text-neutral-400">
+          <p className="text-xs text-muted-foreground mt-1">
             Quản lý, mở lại phiên làm việc trong AI Workspace hoặc xuất bản mã nguồn dự án.
           </p>
         </div>
@@ -66,10 +56,10 @@ export const MyProjectsPage = () => {
             <button
               key={st}
               onClick={() => setActiveFilter(st)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                 activeFilter === st
-                  ? 'bg-ff-gold text-black font-semibold'
-                  : 'glass-panel text-neutral-300 hover:text-white'
+                  ? 'bg-foreground text-background font-semibold'
+                  : 'liquid-glass text-muted-foreground hover:text-foreground'
               }`}
             >
               {st}
@@ -78,13 +68,13 @@ export const MyProjectsPage = () => {
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm theo tên dự án..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl glass-panel text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-ff-gold"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-card border border-border text-xs text-foreground placeholder-neutral-500 focus:outline-none focus:border-white"
           />
         </div>
       </div>
@@ -98,30 +88,28 @@ export const MyProjectsPage = () => {
                 <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-mono ${project.statusColor}`}>
                   ● {project.status}
                 </span>
-                <span className="text-[11px] text-neutral-500 font-mono">
+                <span className="text-[11px] text-muted-foreground font-mono">
                   Sửa đổi: {project.lastModified}
                 </span>
               </div>
 
               <div>
-                <h3 className="font-serif font-bold text-xl text-neutral-100 group-hover:text-ff-gold-light transition-colors">
+                <h3 className="font-sans font-semibold text-xl text-foreground">
                   {project.vietnameseName}
                 </h3>
-                <p className="text-xs text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                   {project.description}
                 </p>
               </div>
 
-              {/* Blueprint Summary Box */}
-              <div className="p-3 rounded-xl bg-black/40 border border-white/5 text-[11px] space-y-1 font-mono">
+              <div className="p-3 rounded-xl bg-black/70 border border-white/10 text-[11px] space-y-1 font-mono">
                 <p className="text-neutral-300">Mục tiêu: {project.blueprint.goal}</p>
-                <p className="text-neutral-500">Đối tượng: {project.blueprint.audience}</p>
+                <p className="text-muted-foreground">Đối tượng: {project.blueprint.audience}</p>
               </div>
             </div>
 
-            {/* Bottom Meta & Actions */}
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-3 text-xs text-neutral-400 font-mono">
+            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
                 <span>{project.filesCount} tệp</span>
                 <span>·</span>
                 <span className="text-ff-jade">Checks: {project.checksPassed}</span>
@@ -132,7 +120,7 @@ export const MyProjectsPage = () => {
                   variant="primary" 
                   size="sm" 
                   icon={Terminal}
-                  onClick={() => navigate('/workspace', { state: { initialPrompt: `Tiếp tục chỉnh sửa dự án ${project.vietnameseName}` } })}
+                  onClick={() => navigate('/workspace', { state: { templateTitle: project.vietnameseName, initialPrompt: `Tiếp tục chỉnh sửa dự án ${project.vietnameseName}` } })}
                 >
                   Mở Workspace
                 </Button>

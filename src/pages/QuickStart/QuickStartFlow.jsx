@@ -4,34 +4,26 @@ import {
   Sparkles, 
   ArrowRight, 
   ArrowLeft, 
-  CheckCircle2, 
-  Layers, 
-  Users, 
-  Palette, 
-  FileText,
-  ShieldCheck,
   Check
 } from 'lucide-react';
 import { Window } from '../../components/macos/Window';
 import { Button } from '../../components/macos/Button';
-import { ProgressBar, Badge } from '../../components/macos/UIElements';
+import { ProgressBar } from '../../components/macos/UIElements';
 
 export const QuickStartFlow = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const initialCategory = location.state?.selectedCategory || 'club-website';
   const initialPrompt = location.state?.initialPrompt || '';
 
   const [step, setStep] = useState(1);
   const totalSteps = 6;
 
-  // Form State
   const [formData, setFormData] = useState({
-    projectName: 'F-Code Student Tech Club',
-    goal: 'Giới thiệu câu lạc bộ, tuyển quân thành viên K20 và chia sẻ học liệu công nghệ',
+    projectName: initialPrompt ? `Dự án: ${initialPrompt.slice(0, 32)}` : 'F-Code Student Tech Club',
+    goal: initialPrompt || 'Giới thiệu câu lạc bộ, tuyển quân thành viên K20 và chia sẻ học liệu công nghệ',
     audience: 'Học sinh, sinh viên yêu thích AI, thiết kế và lập trình web',
-    sections: ['Trang chủ giới thiệu', 'Đồng hồ đếm ngược tuyển quân', 'Danh sách ban chuyên môn', 'Form đăng ký trực tuyến'],
-    visualStyle: 'macOS Liquid Cyber-Academic (Tối sang trọng, viền vàng kim #EAB308)',
+    sections: ['Trang chủ giới thiệu (Hero Section)', 'Đồng hồ đếm ngược tuyển quân', 'Danh sách ban chuyên môn & lãnh đạo', 'Form đăng ký trực tuyến'],
+    visualStyle: 'F-Forum Pure Black Liquid Glass (Đen thuần khiết, chữ trắng tinh giản)',
     hasBackendForm: 'Có (Tích hợp Google Form / Webhook)',
   });
 
@@ -83,10 +75,9 @@ export const QuickStartFlow = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-4 space-y-6">
-      {/* Top Progress Indicator */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
-          <span className="flex items-center gap-1.5 text-ff-gold">
+        <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
+          <span className="flex items-center gap-1.5 text-foreground">
             <Sparkles className="w-3.5 h-3.5" />
             Quick Start Blueprint Wizard
           </span>
@@ -95,7 +86,6 @@ export const QuickStartFlow = () => {
         <ProgressBar progress={(step / totalSteps) * 100} showPercent={false} />
       </div>
 
-      {/* Main macOS Wizard Window */}
       <Window
         title={`Tạo Dự Án Nhanh — Bước ${step}: ${
           step === 1 ? 'Tên Dự Án' :
@@ -105,17 +95,15 @@ export const QuickStartFlow = () => {
           step === 5 ? 'Phong Cách Thị Giác' : 'Xác Nhận Kế Hoạch'
         }`}
         subtitle="Prompt Blueprint Generator"
-        className="border-white/15"
       >
         <div className="p-6 sm:p-8 space-y-6">
-          {/* STEP 1: PROJECT NAME */}
           {step === 1 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-neutral-100">
+                <h3 className="text-xl font-sans font-semibold text-foreground">
                   Tên dự án của bạn là gì?
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-muted-foreground">
                   Đặt tên cho website hoặc ứng dụng web của bạn để AI tổ chức cấu trúc tệp.
                 </p>
               </div>
@@ -125,19 +113,18 @@ export const QuickStartFlow = () => {
                 value={formData.projectName}
                 onChange={e => setFormData({ ...formData, projectName: e.target.value })}
                 placeholder="Ví dụ: CLB Sáng Tạo Trẻ FPT..."
-                className="w-full px-4 py-3 rounded-xl bg-neutral-900 border border-white/10 text-neutral-100 text-sm focus:outline-none focus:border-ff-gold"
+                className="w-full px-4 py-3 rounded-xl bg-black border border-border text-foreground text-sm focus:outline-none focus:border-white"
               />
             </div>
           )}
 
-          {/* STEP 2: GOAL */}
           {step === 2 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-neutral-100">
+                <h3 className="text-xl font-sans font-semibold text-foreground">
                   Mục đích chính của sản phẩm này là gì?
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-muted-foreground">
                   AI sẽ dựa vào mục tiêu để sắp xếp luồng hành vi (CTA) mạnh mẽ nhất.
                 </p>
               </div>
@@ -147,19 +134,18 @@ export const QuickStartFlow = () => {
                 value={formData.goal}
                 onChange={e => setFormData({ ...formData, goal: e.target.value })}
                 placeholder="Ví dụ: Giới thiệu CLB và thu hút hơn 100 sinh viên nộp đơn tuyển thành viên..."
-                className="w-full px-4 py-3 rounded-xl bg-neutral-900 border border-white/10 text-neutral-100 text-sm focus:outline-none focus:border-ff-gold"
+                className="w-full px-4 py-3 rounded-xl bg-black border border-border text-foreground text-sm focus:outline-none focus:border-white"
               />
             </div>
           )}
 
-          {/* STEP 3: AUDIENCE */}
           {step === 3 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-neutral-100">
+                <h3 className="text-xl font-sans font-semibold text-foreground">
                   Ai là đối tượng người xem hoặc sử dụng chính?
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-muted-foreground">
                   Xác định đúng người dùng giúp thiết kế cỡ chữ và giao diện trực quan hơn.
                 </p>
               </div>
@@ -169,19 +155,18 @@ export const QuickStartFlow = () => {
                 value={formData.audience}
                 onChange={e => setFormData({ ...formData, audience: e.target.value })}
                 placeholder="Ví dụ: Học sinh THPT và sinh viên năm nhất..."
-                className="w-full px-4 py-3 rounded-xl bg-neutral-900 border border-white/10 text-neutral-100 text-sm focus:outline-none focus:border-ff-gold"
+                className="w-full px-4 py-3 rounded-xl bg-black border border-border text-foreground text-sm focus:outline-none focus:border-white"
               />
             </div>
           )}
 
-          {/* STEP 4: SECTIONS */}
           {step === 4 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-neutral-100">
+                <h3 className="text-xl font-sans font-semibold text-foreground">
                   Các trang hoặc khối nội dung cần có?
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-muted-foreground">
                   Chọn các khối bạn muốn có trên trang web của mình:
                 </p>
               </div>
@@ -196,12 +181,12 @@ export const QuickStartFlow = () => {
                       onClick={() => toggleSection(sec)}
                       className={`p-3 rounded-xl border text-left flex items-center justify-between text-xs transition-all cursor-pointer ${
                         selected
-                          ? 'bg-ff-gold/15 border-ff-gold text-ff-gold-light font-medium'
+                          ? 'bg-foreground text-background border-foreground font-semibold'
                           : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10'
                       }`}
                     >
                       <span>{sec}</span>
-                      {selected && <Check className="w-4 h-4 text-ff-gold shrink-0 ml-2" />}
+                      {selected && <Check className="w-4 h-4 shrink-0 ml-2" />}
                     </button>
                   );
                 })}
@@ -209,24 +194,23 @@ export const QuickStartFlow = () => {
             </div>
           )}
 
-          {/* STEP 5: VISUAL STYLE */}
           {step === 5 && (
             <div className="space-y-4 animate-fadeIn">
               <div className="space-y-1">
-                <h3 className="text-xl font-serif font-bold text-neutral-100">
+                <h3 className="text-xl font-sans font-semibold text-foreground">
                   Phong cách thẩm mỹ & màu sắc mong muốn?
                 </h3>
-                <p className="text-xs text-neutral-400">
+                <p className="text-xs text-muted-foreground">
                   Chọn định hướng hình ảnh phù hợp với thương hiệu của bạn:
                 </p>
               </div>
 
               <div className="space-y-2">
                 {[
-                  'macOS Liquid Cyber-Academic (Tối sang trọng, viền vàng kim #EAB308)',
-                  'Minimalist Apple Clean (Nền sáng, font Inter tinh giản)',
-                  'Neon Tech Dark (Đen sâu thẳm, quầng sáng xanh dương và hồng neon)',
-                  'Academic Classic (Serif cổ điển, trắng ấm ngọc trai và xanh ngọc)'
+                  'F-Forum Pure Black Liquid Glass (Đen thuần khiết, chữ trắng tinh giản)',
+                  'Minimalist Clean Light (Nền sáng, font Inter tinh giản)',
+                  'Obsidian Serif Editorial (Inter kết hợp điểm nhấn Instrument Serif)',
+                  'High-Contrast Studio Dark (Bảng điều khiển chuyên sâu, viền kính mảnh)'
                 ].map((st) => (
                   <button
                     key={st}
@@ -234,7 +218,7 @@ export const QuickStartFlow = () => {
                     onClick={() => setFormData({ ...formData, visualStyle: st })}
                     className={`w-full p-3.5 rounded-xl border text-left text-xs transition-all cursor-pointer ${
                       formData.visualStyle === st
-                        ? 'bg-ff-gold/15 border-ff-gold text-ff-gold-light font-semibold'
+                        ? 'bg-foreground text-background border-foreground font-semibold'
                         : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10'
                     }`}
                   >
@@ -245,44 +229,42 @@ export const QuickStartFlow = () => {
             </div>
           )}
 
-          {/* STEP 6: BLUEPRINT CONFIRMATION */}
           {step === 6 && (
             <div className="space-y-5 animate-fadeIn">
-              <div className="p-4 rounded-xl bg-ff-gold/10 border border-ff-gold/30 text-ff-gold-light space-y-1">
-                <h4 className="font-serif font-bold text-base flex items-center gap-2">
+              <div className="p-4 rounded-xl liquid-glass text-foreground space-y-1">
+                <h4 className="font-sans font-semibold text-base flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   Bản Tóm Tắt Yêu Cầu (Prompt Blueprint) Đã Sẵn Sàng
                 </h4>
-                <p className="text-xs text-neutral-300">
+                <p className="text-xs text-muted-foreground">
                   Hệ thống đã ghép câu trả lời của bạn thành yêu cầu kỹ thuật chuẩn để AI Agent bắt đầu lập trình ngay.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-black/60 border border-white/10 space-y-3 font-mono text-xs text-neutral-300">
+              <div className="p-4 rounded-xl bg-black border border-border space-y-3 font-mono text-xs text-neutral-300">
                 <div>
-                  <span className="text-neutral-500">Tên dự án:</span>{' '}
-                  <span className="text-ff-gold-light font-bold">{formData.projectName}</span>
+                  <span className="text-muted-foreground">Tên dự án:</span>{' '}
+                  <span className="text-foreground font-bold">{formData.projectName}</span>
                 </div>
                 <div>
-                  <span className="text-neutral-500">Mục tiêu:</span> {formData.goal}
+                  <span className="text-muted-foreground">Mục tiêu:</span> {formData.goal}
                 </div>
                 <div>
-                  <span className="text-neutral-500">Đối tượng:</span> {formData.audience}
+                  <span className="text-muted-foreground">Đối tượng:</span> {formData.audience}
                 </div>
                 <div>
-                  <span className="text-neutral-500">Các khối nội dung:</span>
+                  <span className="text-muted-foreground">Các khối nội dung:</span>
                   <ul className="list-disc pl-5 mt-1 space-y-0.5 text-neutral-400">
                     {formData.sections.map((s, idx) => <li key={idx}>{s}</li>)}
                   </ul>
                 </div>
                 <div>
-                  <span className="text-neutral-500">Phong cách:</span> {formData.visualStyle}
+                  <span className="text-muted-foreground">Phong cách:</span> {formData.visualStyle}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Wizard Action Controls */}
           <div className="pt-4 border-t border-white/10 flex items-center justify-between">
             <Button
               variant="ghost"

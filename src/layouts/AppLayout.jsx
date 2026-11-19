@@ -28,31 +28,35 @@ export const AppLayout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-ff-deep text-neutral-100 flex flex-col relative overflow-x-hidden">
-      {/* Ambient background decoration */}
+    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-x-clip">
+      {/* Subtle Monochrome Obsidian Ambient Spotlight */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-ff-gold/5 rounded-full blur-[140px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 grid-matrix opacity-40" />
+        <div
+          className="absolute inset-x-0 top-0 h-[420px]"
+          style={{
+            background: 'radial-gradient(ellipse 80% 35% at 50% 0%, rgba(255,255,255,0.06), transparent 70%)',
+          }}
+        />
+        <div className="absolute inset-0 grid-matrix opacity-25" />
       </div>
 
-      {/* macOS Top Menu Bar */}
+      {/* Monochrome Liquid Top Navbar */}
       <MenuBar 
         onOpenSpotlight={() => setSpotlightOpen(true)}
         onTogglePinnedChat={() => setPinnedChatOpen(prev => !prev)}
         isChatActive={pinnedChatOpen}
       />
 
-      {/* Main Viewport Area (Adjusts with Pinned Chat margin if pinned on large screens) */}
+      {/* Main Viewport Area */}
       <main 
-        className={`flex-1 pt-14 pb-24 px-4 sm:px-6 max-w-7xl w-full mx-auto relative z-10 transition-all duration-300 ${
+        className={`flex-1 pt-20 pb-24 px-4 sm:px-6 max-w-7xl w-full mx-auto relative z-10 transition-all duration-300 ${
           pinnedChatOpen && isPinned ? 'lg:mr-[430px]' : ''
         }`}
       >
         <Outlet />
       </main>
 
-      {/* macOS Bottom Dock */}
+      {/* Monochrome Liquid Glass Bottom Dock */}
       <Dock onOpenChat={() => setPinnedChatOpen(true)} />
 
       {/* Pinned & Integrated Chat UI (Chat + Project + Workspace + History) */}
