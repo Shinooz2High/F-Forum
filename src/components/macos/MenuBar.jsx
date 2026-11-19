@@ -37,11 +37,11 @@ export const MenuBar = ({ onOpenSpotlight, onTogglePinnedChat, isChatActive }) =
   }, []);
 
   const navLinks = [
-    { to: '/', label: 'Giới thiệu', icon: Sparkles },
+    { to: '/neuralyn', label: 'Neuralyn SaaS', icon: Sparkles, highlight: true },
     { to: '/home', label: 'Bàn làm việc', icon: LayoutDashboard },
     { to: '/explore', label: 'Khám phá', icon: Compass },
     { to: '/templates', label: 'Mẫu dự án', icon: Layers },
-    { to: '/workspace', label: 'AI Workspace', icon: Sparkles, highlight: true },
+    { to: '/workspace', label: 'AI Workspace', icon: Sparkles },
     { to: '/projects', label: 'Dự án của tôi', icon: FolderGit2 },
     { to: '/knowledge', label: 'Thư viện tri thức', icon: BookOpen },
   ];

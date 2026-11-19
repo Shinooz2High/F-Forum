@@ -8,6 +8,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        'muted-foreground': 'hsl(var(--muted-foreground))',
+        card: 'hsl(var(--card))',
+        border: 'hsl(var(--border))',
         'ff-deep': '#07090E',
         'ff-surface': '#0B0F17',
         'ff-elevated': '#111827',
@@ -29,7 +34,8 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'Playfair Display', 'Georgia', 'serif'],
+        serif: ['"Instrument Serif"', '"Cormorant Garamond"', 'Playfair Display', 'Georgia', 'serif'],
+        'instrument-serif': ['"Instrument Serif"', 'Georgia', 'serif'],
         sans: ['"Inter"', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', 'sans-serif'],
         mono: ['"SF Mono"', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },

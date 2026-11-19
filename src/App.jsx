@@ -10,6 +10,7 @@ import { MyProjectsPage } from './pages/MyProjects/MyProjectsPage';
 import { KnowledgePage } from './pages/Knowledge/KnowledgePage';
 import { QuickStartFlow } from './pages/QuickStart/QuickStartFlow';
 import { ProfilePage } from './pages/Profile/ProfilePage';
+import { NeuralynLandingPage } from './pages/Neuralyn/NeuralynLandingPage';
 import { Window } from './components/macos/Window';
 import { Button } from './components/macos/Button';
 
@@ -25,12 +26,17 @@ function NotFoundPage() {
             Đường dẫn không tồn tại
           </h2>
           <p className="text-xs text-neutral-400">
-            Trang bạn đang tìm kiếm có thể đã được di chuyển hoặc xóa khỏi hệ thống F-Forum.
+            Trang bạn đang tìm kiếm có thể đã được di chuyển hoặc xóa khỏi hệ thống.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center gap-2">
             <Link to="/home">
               <Button variant="primary" size="md">
-                Quay Về Bàn Làm Việc
+                Về F-Forum Studio
+              </Button>
+            </Link>
+            <Link to="/neuralyn">
+              <Button variant="secondary" size="md">
+                Xem Neuralyn Landing
               </Button>
             </Link>
           </div>
@@ -43,8 +49,16 @@ function NotFoundPage() {
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<AppLayout />}>
+      {/* Neuralyn Dark SaaS Landing Page (Pure Full-screen experience) */}
+      <Route path="/" element={<NeuralynLandingPage />} />
+      <Route path="/neuralyn" element={<NeuralynLandingPage />} />
+
+      {/* F-Forum Ecosystem */}
+      <Route path="/f-forum" element={<AppLayout />}>
         <Route index element={<LandingPage />} />
+      </Route>
+
+      <Route element={<AppLayout />}>
         <Route path="home" element={<HomePage />} />
         <Route path="explore" element={<ExplorePage />} />
         <Route path="templates" element={<TemplatesPage />} />
