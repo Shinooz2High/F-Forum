@@ -4,6 +4,8 @@ export const mockTemplates = [
     title: 'Student Club Website',
     vietnameseTitle: 'Website Câu Lạc Bộ Sinh Viên',
     category: 'Websites',
+    cardFormat: 'large', // Thẻ lớn (Full Landing Page)
+    designStyle: 'Cyber-Academic',
     difficulty: 'Người mới (Beginner)',
     badge: 'Phổ biến nhất',
     description: 'Trang web giới thiệu CLB hiện đại với phần tuyển thành viên, ban chủ nhiệm, dự án nổi bật, sự kiện và form đăng ký trực tuyến.',
@@ -16,15 +18,68 @@ export const mockTemplates = [
     ],
     techStack: ['React', 'Tailwind CSS', 'Lucide Icons'],
     previewImage: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
-    demoUrl: '#',
+    demoUrl: 'https://f-code-club.preview.f-forum.edu.vn',
     rating: 4.9,
-    usesCount: 1420
+    usesCount: 1420,
+    fps: 60,
+    bundleSize: '1.4 MB',
+    responsiveScore: '100% Mobile & Desktop'
+  },
+  {
+    id: 'navbar-hero-strip',
+    title: 'Dynamic Navbar & Glass Hero Strip',
+    vietnameseTitle: 'Khối Hero Banner & Menu Kính Mờ',
+    category: 'UI Components',
+    cardFormat: 'wide', // Thẻ ngang (Navbar/Hero)
+    designStyle: 'macOS Sonoma',
+    difficulty: 'Người mới (Beginner)',
+    badge: 'Module Nổi Bật',
+    description: 'Khối Header và Hero Section phong cách macOS Sonoma với hiệu ứng kính mờ sâu, đồng hồ hệ thống và thanh tìm kiếm tích hợp sẵn.',
+    features: [
+      'MenuBar kính mờ h-10 chuẩn Apple',
+      'Tích hợp Spotlight Search modal',
+      'CTA nút kép gradient ánh kim hoàng gia'
+    ],
+    techStack: ['React', 'Glassmorphism', 'Tailwind'],
+    previewImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    demoUrl: 'https://hero-strip.preview.f-forum.edu.vn',
+    rating: 4.9,
+    usesCount: 880,
+    fps: 60,
+    bundleSize: '0.4 MB',
+    responsiveScore: 'Fluid Clamp Typography'
+  },
+  {
+    id: 'mobile-quiz-card',
+    title: 'Mobile CBT Flashcard & Quiz UI',
+    vietnameseTitle: 'Giao Diện Ôn Thi Di Động CBT',
+    category: 'Web Apps',
+    cardFormat: 'vertical', // Thẻ dọc (Mobile UI)
+    designStyle: 'Minimalist Bento',
+    difficulty: 'Trung bình (Intermediate)',
+    badge: 'Mobile Optimized',
+    description: 'Mẫu giao diện phòng thi tối ưu dọc cho màn hình cảm ứng di động iPhone/Android với bộ đếm giờ, thẻ bài lật và thống kê điểm số.',
+    features: [
+      'Giao diện thẻ bài trượt swipe mượt mà',
+      'Bộ đếm giờ 90 phút chuẩn CBT',
+      'Tự động lưu tiến độ làm bài thi'
+    ],
+    techStack: ['React', 'Local Database', 'Audio'],
+    previewImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80',
+    demoUrl: 'https://mobile-cbt.preview.f-forum.edu.vn',
+    rating: 5.0,
+    usesCount: 2150,
+    fps: 60,
+    bundleSize: '0.8 MB',
+    responsiveScore: '99% Touch-first'
   },
   {
     id: 'maker-portfolio',
     title: 'Maker & Developer Portfolio',
     vietnameseTitle: 'Portfolio Cá Nhân Sang Trọng',
     category: 'Websites',
+    cardFormat: 'large', // Thẻ lớn
+    designStyle: 'Dark Elegance',
     difficulty: 'Người mới (Beginner)',
     badge: 'Khuyên dùng',
     description: 'Hồ sơ năng lực cá nhân phong cách macOS liquid với showcase sản phẩm tương tác, blog ghi chép và thông tin liên hệ.',
@@ -37,56 +92,20 @@ export const mockTemplates = [
     ],
     techStack: ['React', 'Framer-like CSS', 'Tailwind'],
     previewImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
-    demoUrl: '#',
+    demoUrl: 'https://portfolio.preview.f-forum.edu.vn',
     rating: 4.8,
-    usesCount: 980
-  },
-  {
-    id: 'quiz-study-app',
-    title: 'CBT Quiz & Flashcard App',
-    vietnameseTitle: 'Ứng Dụng Thi Thử Trắc Nghiệm CBT',
-    category: 'Web Apps',
-    difficulty: 'Trung bình (Intermediate)',
-    badge: 'Học thuật',
-    description: 'Ứng dụng thi trắc nghiệm học thuật kế thừa từ phòng thi CBT F-Forum: đồng hồ đếm ngược, phân tích kết quả và ngân hàng câu hỏi.',
-    features: [
-      'Chế độ phòng thi bấm giờ mô phỏng CBT thực tế',
-      'Chấm điểm tự động và giải thích chi tiết từng câu',
-      'Thẻ ghi nhớ Flashcards lật tương tác',
-      'Lưu kết quả học tập vào LocalStorage',
-      'Hỗ trợ import bộ câu hỏi từ file Markdown/JSON'
-    ],
-    techStack: ['React', 'Local Database', 'Audio Effects'],
-    previewImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80',
-    demoUrl: '#',
-    rating: 5.0,
-    usesCount: 2150
-  },
-  {
-    id: 'landing-product',
-    title: 'Modern Product Landing Page',
-    vietnameseTitle: 'Trang Giới Thiệu Sản Phẩm & Sự Kiện',
-    category: 'Websites',
-    difficulty: 'Người mới (Beginner)',
-    badge: 'Chuyển đổi cao',
-    description: 'Landing page phong cách Apple/macOS với hiệu ứng kính mờ glassmorphism, tương thích responsive hoàn hảo và nút CTA thu hút.',
-    features: [
-      'Bố cục 7 phân đoạn tiêu chuẩn quốc tế',
-      'Bảng so sánh tính năng trực quan',
-      'Phần Accordion giải đáp thắc mắc FAQ',
-      'Tối ưu tốc độ tải trang cực nhanh'
-    ],
-    techStack: ['React', 'Tailwind CSS'],
-    previewImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
-    demoUrl: '#',
-    rating: 4.7,
-    usesCount: 840
+    usesCount: 980,
+    fps: 60,
+    bundleSize: '1.1 MB',
+    responsiveScore: '100% Fluid'
   },
   {
     id: 'club-dashboard',
     title: 'Club Operations Dashboard',
     vietnameseTitle: 'Bảng Điều Khiển Hoạt Động CLB',
     category: 'Web Apps',
+    cardFormat: 'wide', // Thẻ ngang
+    designStyle: 'Minimalist Bento',
     difficulty: 'Nâng cao (Advanced)',
     badge: 'Đầy đủ tính năng',
     description: 'Hệ thống quản lý nội bộ dành cho ban điều hành CLB: điểm danh thành viên, lịch sự kiện, quản lý quỹ và phân công nhiệm vụ.',
@@ -98,8 +117,11 @@ export const mockTemplates = [
     ],
     techStack: ['React', 'Chart UI', 'Tailwind CSS'],
     previewImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
-    demoUrl: '#',
+    demoUrl: 'https://dashboard.preview.f-forum.edu.vn',
     rating: 4.9,
-    usesCount: 670
+    usesCount: 670,
+    fps: 60,
+    bundleSize: '1.9 MB',
+    responsiveScore: 'Dashboard Grid'
   }
 ];

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Compass, 
@@ -6,183 +6,620 @@ import {
   Sparkles, 
   ArrowRight, 
   Globe, 
-  Code, 
+  Code2, 
   Layers, 
   ShieldCheck, 
   SlidersHorizontal,
-  Flame
+  Flame,
+  Laptop,
+  Smartphone,
+  Eye,
+  ExternalLink,
+  RotateCcw,
+  BookOpen,
+  FolderGit2,
+  FileCode,
+  Cpu,
+  Check,
+  Copy,
+  Terminal,
+  Bookmark,
+  Zap,
+  BarChart2
 } from 'lucide-react';
 import { GlassCard } from '../../components/macos/GlassCard';
 import { Button } from '../../components/macos/Button';
 import { Badge } from '../../components/macos/UIElements';
+import { Window } from '../../components/macos/Window';
+import { mockTemplates } from '../../data/mockTemplates';
+import { mockResources, STANDARDIZED_CATEGORIES } from '../../data/mockResources';
 
 export const ExplorePage = () => {
-  const [activeCategory, setActiveCategory] = useState('Tất cả');
-  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const categories = ['Tất cả', 'Websites', 'Web Apps', 'Câu Lạc Bộ', 'Học Thuật', 'Thương Mại'];
+  // Mode: 'templates' (Split Stage 60/40) or 'resources' (Bento Flow)
+  const [viewMode, setViewMode] = useState('templates'); 
+  const [selectedStyle, setSelectedStyle] = useState('Tất cả');
+  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const ideas = [
-    {
-      id: 'idea-1',
-      title: 'Cổng Thông Tin Tuyển Quân CLB Sinh Viên',
-      category: 'Câu Lạc Bộ',
-      difficulty: 'Người mới',
-      badge: 'Thịnh hành',
-      description: 'Trang landing giới thiệu mục tiêu, các ban chuyên môn, countdown đếm ngược và tích hợp form tuyển thành viên thế hệ mới.',
-      estimatedTime: '5 phút AI Build',
-      prompt: 'Tạo website tuyển quân cho CLB Sinh Viên với hero countdown và form đăng ký tuyển thành viên'
-    },
-    {
-      id: 'idea-2',
-      title: 'Đấu Trường Thi Thử Trắc Nghiệm CBT 1vs1',
-      category: 'Học Thuật',
-      difficulty: 'Trung bình',
-      badge: 'F-Forum CBT',
-      description: 'Ứng dụng phòng thi trắc nghiệm học thuật với ngân hàng câu hỏi, đồng hồ bấm giờ chuẩn hóa và xếp hạng kết quả thi.',
-      estimatedTime: '8 phút AI Build',
-      prompt: 'Tạo ứng dụng thi trắc nghiệm CBT có đồng hồ đếm ngược và chấm điểm tự động'
-    },
-    {
-      id: 'idea-3',
-      title: 'Portfolio Kỹ Sư AI & Vibe Coder',
-      category: 'Websites',
-      difficulty: 'Người mới',
-      badge: 'macOS Liquid',
-      description: 'Trang cá nhân phong cách Apple với hiệu ứng kính mờ, showcase các dự án AI-built và liên kết mạng xã hội cá nhân.',
-      estimatedTime: '4 phút AI Build',
-      prompt: 'Tạo portfolio cá nhân phong cách macOS liquid với danh sách dự án và liên hệ'
-    },
-    {
-      id: 'idea-4',
-      title: 'Bảng Điều Khiển Quản Lý Quỹ & Sự Kiện CLB',
-      category: 'Web Apps',
-      difficulty: 'Nâng cao',
-      badge: 'Quản trị',
-      description: 'Dashboard nội bộ dành cho Ban Chủ Nhiệm CLB để theo dõi tiến độ sự kiện, điểm danh hội viên và thu chi quỹ.',
-      estimatedTime: '10 phút AI Build',
-      prompt: 'Tạo dashboard quản lý sự kiện và thành viên câu lạc bộ với bảng thống kê và bộ lọc'
-    },
-    {
-      id: 'idea-5',
-      title: 'Sổ Lưu Bút Kỷ Yếu & Ký Ức Học Đường',
-      category: 'Websites',
-      difficulty: 'Người mới',
-      badge: 'Kế thừa F-Forum',
-      description: 'Không gian lưu giữ hình ảnh, câu chuyện kỷ niệm và lời chúc của các thế hệ học sinh trước ngày tốt nghiệp.',
-      estimatedTime: '6 phút AI Build',
-      prompt: 'Tạo trang kỷ yếu lưu bút học sinh với thư viện ảnh và tường tin nhắn'
-    },
-    {
-      id: 'idea-6',
-      title: 'Machi Mart — Cửa Hàng Trao Đổi Giáo Trình Cũ',
-      category: 'Thương Mại',
-      difficulty: 'Trung bình',
-      badge: 'Thương mại sinh viên',
-      description: 'Nền tảng danh mục sách giáo trình, đồng phục và tài liệu học tập cũ để sinh viên khóa trên tặng lại khóa dưới.',
-      estimatedTime: '7 phút AI Build',
-      prompt: 'Tạo trang danh mục trao đổi sách và tài liệu học tập cho sinh viên với bộ lọc tìm kiếm'
-    }
-  ];
+  // Active template for Sticky Live Stage (Right 40%)
+  const [activeTemplate, setActiveTemplate] = useState(mockTemplates[0]);
+  const [liveStageDevice, setLiveStageDevice] = useState('desktop'); // 'desktop' | 'mobile'
+  const [liveCountdown, setLiveCountdown] = useState(12);
+  const [copiedCodeId, setCopiedCodeId] = useState(null);
 
-  const filteredIdeas = ideas.filter(item => {
-    const matchCat = activeCategory === 'Tất cả' || item.category === activeCategory;
-    const matchQuery = item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       item.description.toLowerCase().includes(searchQuery.toLowerCase());
+  // Floating dock collapse on scroll
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 120);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const designStyles = ['Tất cả', 'Cyber-Academic', 'macOS Sonoma', 'Minimalist Bento', 'Dark Elegance'];
+
+  // Filter templates
+  const filteredTemplates = mockTemplates.filter(t => {
+    const matchStyle = selectedStyle === 'Tất cả' || t.designStyle === selectedStyle;
+    const matchQuery = !searchQuery.trim() || 
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.vietnameseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchStyle && matchQuery;
+  });
+
+  // Filter resources for Bento Stream
+  const filteredResources = mockResources.filter(r => {
+    const matchCat = selectedCategory === 'Tất cả' || r.category === selectedCategory;
+    const matchQuery = !searchQuery.trim() || 
+      r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchCat && matchQuery;
   });
 
-  const handleBuildIdea = (idea) => {
-    navigate('/workspace', { state: { initialPrompt: idea.prompt } });
+  const handleLaunchToWorkspace = (template) => {
+    navigate('/workspace', {
+      state: {
+        templateId: template.id,
+        templateTitle: template.vietnameseTitle,
+        initialPrompt: `Khởi tạo dự án từ mẫu "${template.vietnameseTitle} (${template.title})" với phong cách ${template.designStyle}.`
+      }
+    });
+  };
+
+  const handleUseResourceInProject = (resource) => {
+    navigate('/workspace', {
+      state: {
+        initialPrompt: `Tích hợp tài nguyên "${resource.name}" (${resource.category}) vào dự án Workspace. Yêu cầu: ${resource.description}`
+      }
+    });
+  };
+
+  const handleCopyCode = (id, text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCodeId(id);
+    setTimeout(() => setCopiedCodeId(null), 2000);
   };
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-medium">
+    <div className="space-y-8 pb-20">
+      {/* Top Header */}
+      <div className="text-center max-w-3xl mx-auto space-y-2 pt-2">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-ff-gold/30 bg-ff-gold/10 text-ff-gold-light text-xs font-medium">
           <Compass className="w-3.5 h-3.5" />
-          <span>Khám Phá Tiềm Năng Kiến Tạo</span>
+          <span>Interactive Showcase Studio · Sân Khấu Khám Phá</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-serif font-bold text-neutral-100">
-          Bạn có thể xây dựng những sản phẩm gì?
+          Xưởng Trưng Bày & Thử Nghiệm Tương Tác
         </h1>
-        <p className="text-sm text-neutral-400">
-          Khám phá các ý tưởng sản phẩm thực tế phù hợp với sinh viên, học sinh và các câu lạc bộ học đường.
+        <p className="text-xs sm:text-sm text-neutral-400">
+          Chuyển đổi giữa Kho Template UI/UX bất đối xứng và Dòng chảy Bento 8 nhóm tài nguyên chuẩn hóa.
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Categories */}
-        <div className="flex flex-wrap items-center gap-2">
-          {categories.map(cat => (
+      {/* ================= FLOATING COMMAND DOCK ================= */}
+      <div 
+        className={`sticky top-12 z-30 transition-all duration-300 max-w-5xl mx-auto px-2 ${
+          isScrolled ? 'py-1' : 'py-2'
+        }`}
+      >
+        <div className="glass-dock rounded-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-3 shadow-2xl border border-white/15 bg-neutral-950/85 backdrop-blur-2xl">
+          {/* View Mode Switcher: Templates vs Resources */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-900 border border-white/10 text-xs">
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
-                activeCategory === cat
-                  ? 'bg-ff-gold text-black font-semibold shadow-md'
-                  : 'glass-panel text-neutral-300 hover:text-white hover:border-white/20'
+              onClick={() => setViewMode('templates')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                viewMode === 'templates'
+                  ? 'bg-ff-gold text-black shadow-md'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
-              {cat}
+              <Layers className="w-3.5 h-3.5" />
+              <span>Kho Template UI/UX</span>
             </button>
-          ))}
-        </div>
+            <button
+              onClick={() => setViewMode('resources')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                viewMode === 'resources'
+                  ? 'bg-ff-gold text-black shadow-md'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Bento Tài Nguyên ({mockResources.length})</span>
+            </button>
+          </div>
 
-        {/* Search Input */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Tìm ý tưởng dự án..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl glass-panel text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-ff-gold/50"
-          />
+          {/* Real-time Search input */}
+          <div className="relative flex-1 min-w-[200px] max-w-xs">
+            <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder={viewMode === 'templates' ? 'Tìm mẫu theo tên, phong cách...' : 'Tìm tài nguyên, tech, tag...'}
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-neutral-900/80 border border-white/10 text-xs text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-ff-gold"
+            />
+          </div>
+
+          {/* Quick Filters / Pill strip */}
+          <div className="hidden md:flex items-center gap-1.5 overflow-x-auto text-xs">
+            {viewMode === 'templates' ? (
+              designStyles.map(st => (
+                <button
+                  key={st}
+                  onClick={() => setSelectedStyle(st)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer ${
+                    selectedStyle === st 
+                      ? 'bg-white/20 text-ff-gold-light font-bold border border-ff-gold/30' 
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))
+            ) : (
+              ['Tất cả', 'AI Tools', 'Prompts', 'GitHub Repositories', 'UI/UX'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer ${
+                    selectedCategory === cat 
+                      ? 'bg-white/20 text-ff-gold-light font-bold border border-ff-gold/30' 
+                      : 'text-neutral-400 hover:text-white'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Ideas Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredIdeas.map((idea) => (
-          <GlassCard key={idea.id} className="flex flex-col justify-between p-6 group">
+      {/* ================= VIEW MODE 1: SPLIT STAGE 60/40 FOR TEMPLATES ================= */}
+      {viewMode === 'templates' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* LEFT 60%: Staggered Cascade Waterfall List (7 cols) */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-1">
+              <span>Danh sách mẫu xếp so le ({filteredTemplates.length})</span>
+              <span>Di chuột hoặc click để xem trước trực tiếp</span>
+            </div>
+
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Badge variant={idea.category === 'Học Thuật' ? 'jade' : 'gold'} size="xs">
-                  {idea.category}
-                </Badge>
-                <span className="text-[11px] font-mono text-neutral-400">
-                  {idea.estimatedTime}
-                </span>
-              </div>
+              {filteredTemplates.map((template) => {
+                const isSelected = activeTemplate.id === template.id;
+                const isLarge = template.cardFormat === 'large';
+                const isWide = template.cardFormat === 'wide';
+                const isVertical = template.cardFormat === 'vertical';
 
-              <div>
-                <h3 className="font-serif font-bold text-lg text-neutral-100 group-hover:text-ff-gold-light transition-colors">
-                  {idea.title}
-                </h3>
-                <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                  {idea.description}
-                </p>
-              </div>
-            </div>
+                return (
+                  <div
+                    key={template.id}
+                    onMouseEnter={() => setActiveTemplate(template)}
+                    onClick={() => setActiveTemplate(template)}
+                    className={`rounded-2xl transition-all duration-300 border cursor-pointer overflow-hidden p-4 group ${
+                      isSelected 
+                        ? 'glass-panel border-ff-gold shadow-gold-glow/20 ring-1 ring-ff-gold/40' 
+                        : 'glass-panel border-white/10 hover:border-ff-gold/40'
+                    }`}
+                  >
+                    {/* Asymmetric layout depending on cardFormat */}
+                    {isWide ? (
+                      // WIDE STRIP (Horizontal Hero / Navbar)
+                      <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="w-full sm:w-44 h-24 rounded-xl overflow-hidden relative shrink-0">
+                          <img 
+                            src={template.previewImage} 
+                            alt={template.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                          />
+                          <span className="absolute top-1.5 left-1.5 text-[9px] px-2 py-0.5 rounded-full bg-black/80 text-ff-gold font-mono">
+                            Banner Ngang
+                          </span>
+                        </div>
+                        <div className="flex-1 space-y-1.5 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-ff-gold font-mono uppercase">{template.designStyle}</span>
+                            <span className="text-[10px] text-neutral-400">★ {template.rating}</span>
+                          </div>
+                          <h3 className="font-serif font-bold text-base text-neutral-100 group-hover:text-ff-gold-light transition-colors truncate">
+                            {template.vietnameseTitle}
+                          </h3>
+                          <p className="text-xs text-neutral-400 line-clamp-1">
+                            {template.description}
+                          </p>
+                          <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-mono pt-1">
+                            <span>FPS: {template.fps}</span> · <span>Dung lượng: {template.bundleSize}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : isVertical ? (
+                      // VERTICAL CARD (Mobile UI / Flashcards)
+                      <div className="flex gap-4 items-center">
+                        <div className="w-20 h-28 rounded-xl overflow-hidden border-2 border-neutral-700 relative shrink-0">
+                          <img 
+                            src={template.previewImage} 
+                            alt={template.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                          />
+                          <span className="absolute top-1 left-1 text-[8px] px-1 rounded bg-black/80 text-ff-gold font-mono">
+                            Mobile
+                          </span>
+                        </div>
+                        <div className="flex-1 space-y-1.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="rose" size="xs">Mobile Touch</Badge>
+                            <span className="text-[10px] text-neutral-500 font-mono">{template.designStyle}</span>
+                          </div>
+                          <h3 className="font-serif font-bold text-base text-neutral-100 group-hover:text-ff-gold-light transition-colors">
+                            {template.vietnameseTitle}
+                          </h3>
+                          <p className="text-xs text-neutral-400 line-clamp-2">
+                            {template.description}
+                          </p>
+                          <div className="flex items-center gap-2 pt-1">
+                            {template.techStack.map(ts => (
+                              <span key={ts} className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-neutral-400 font-mono">
+                                {ts}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // LARGE FULL LANDING PAGE CARD
+                      <div className="space-y-3">
+                        <div className="h-36 sm:h-44 rounded-xl overflow-hidden relative">
+                          <img 
+                            src={template.previewImage} 
+                            alt={template.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
+                          <div className="absolute top-2 left-2 flex items-center gap-2">
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-neutral-900/90 text-ff-gold font-mono border border-ff-gold/30">
+                              Full Landing Page
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/70 text-neutral-300 font-mono">
+                              {template.designStyle}
+                            </span>
+                          </div>
+                        </div>
 
-            <div className="pt-4 mt-4 border-t border-white/5 flex items-center justify-between">
-              <span className="text-[11px] text-neutral-500">Độ khó: {idea.difficulty}</span>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                iconRight={ArrowRight}
-                onClick={() => handleBuildIdea(idea)}
-              >
-                Tạo Bằng AI
-              </Button>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-serif font-bold text-lg text-neutral-100 group-hover:text-ff-gold-light transition-colors">
+                              {template.vietnameseTitle}
+                            </h3>
+                            <span className="text-xs text-ff-gold font-mono">★ {template.rating}</span>
+                          </div>
+                          <p className="text-xs text-neutral-400 leading-relaxed line-clamp-2">
+                            {template.description}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </GlassCard>
-        ))}
-      </div>
+          </div>
+
+          {/* RIGHT 40%: Sticky Live Stage (5 cols) */}
+          <div className="lg:col-span-5 sticky top-28 space-y-4">
+            <Window 
+              title={`Live Stage — ${activeTemplate.vietnameseTitle}`}
+              subtitle={activeTemplate.demoUrl}
+              className="border-white/20 shadow-2xl bg-neutral-950"
+              headerRight={
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => setLiveStageDevice('desktop')}
+                    className={`p-1 rounded ${liveStageDevice === 'desktop' ? 'bg-ff-gold text-black' : 'text-neutral-400 hover:text-white'}`}
+                    title="Xem trên Desktop"
+                  >
+                    <Laptop className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setLiveStageDevice('mobile')}
+                    className={`p-1 rounded ${liveStageDevice === 'mobile' ? 'bg-ff-gold text-black' : 'text-neutral-400 hover:text-white'}`}
+                    title="Xem trên Mobile"
+                  >
+                    <Smartphone className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setLiveCountdown(prev => prev + 1)}
+                    className="p-1 rounded text-neutral-400 hover:text-white"
+                    title="Làm mới demo"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              }
+            >
+              {/* Interactive Mock Browser Body */}
+              <div className="p-4 bg-neutral-950/90 space-y-4">
+                {/* Live Sandbox Container */}
+                <div className={`mx-auto transition-all duration-300 ${
+                  liveStageDevice === 'mobile' 
+                    ? 'w-64 rounded-2xl p-3 border-2 border-neutral-700 bg-neutral-900 shadow-xl' 
+                    : 'w-full rounded-xl p-4 border border-ff-gold/25 bg-neutral-900/90'
+                }`}>
+                  <div className="space-y-3 text-center">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-ff-gold/15 border border-ff-gold/30 text-ff-gold-light text-[10px] font-mono">
+                      <Sparkles className="w-3 h-3" />
+                      <span>{activeTemplate.badge}</span>
+                    </div>
+
+                    <h4 className="font-serif font-bold text-lg text-neutral-100">
+                      {activeTemplate.vietnameseTitle}
+                    </h4>
+
+                    <p className="text-[11px] text-neutral-300 line-clamp-2">
+                      {activeTemplate.description}
+                    </p>
+
+                    {/* Live interactive countdown mock */}
+                    <div className="p-2 rounded-lg bg-black/60 border border-white/5 font-mono text-[10px] text-ff-gold">
+                      Countdown: {liveCountdown} Ngày · 08 Giờ · 45 Phút
+                    </div>
+
+                    <div className="flex justify-center gap-2 pt-1">
+                      <button 
+                        onClick={() => alert(`Đã kích hoạt thử nghiệm tương tác của mẫu: ${activeTemplate.vietnameseTitle}`)}
+                        className="px-4 py-1.5 rounded-lg bg-ff-gold text-black font-semibold text-xs shadow-md hover:brightness-105 active:scale-95 cursor-pointer"
+                      >
+                        Tương Tác Thử Nghiệm
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Technical Specifications Spec Bar */}
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 space-y-2 text-xs font-mono">
+                  <div className="flex items-center justify-between text-neutral-300">
+                    <span className="text-neutral-500">Độ phân giải:</span>
+                    <span className="text-ff-jade">{activeTemplate.responsiveScore}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-neutral-300">
+                    <span className="text-neutral-500">Bundle size:</span>
+                    <span>{activeTemplate.bundleSize} (Vite build)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-neutral-300">
+                    <span className="text-neutral-500">Hiệu năng mượt mà:</span>
+                    <span className="text-ff-gold">{activeTemplate.fps} FPS Canvas</span>
+                  </div>
+                  <div className="flex items-center justify-between text-neutral-300">
+                    <span className="text-neutral-500">Phong cách:</span>
+                    <span>{activeTemplate.designStyle}</span>
+                  </div>
+                </div>
+
+                {/* Big Action Button to Workspace */}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  iconRight={ArrowRight}
+                  className="w-full font-serif font-bold tracking-wide"
+                  onClick={() => handleLaunchToWorkspace(activeTemplate)}
+                >
+                  Đẩy Thẳng Vào Workspace
+                </Button>
+              </div>
+            </Window>
+          </div>
+        </div>
+      )}
+
+      {/* ================= VIEW MODE 2: BENTO FLOW FOR 8 RESOURCE CATEGORIES ================= */}
+      {viewMode === 'resources' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
+            <span>Dòng chảy Bento 8 nhóm tài nguyên ({filteredResources.length} mục)</span>
+            <span>Phân hóa theo công năng: Wide Strip, Snippet & Visual</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredResources.map((resource, idx) => {
+              const isWideStrip = resource.category === 'GitHub Repositories' || resource.category === 'Development Tools';
+              const isCodeSnippet = resource.category === 'Prompts' || resource.category === 'Skills & Rules';
+              const isVisual = resource.category === 'UI/UX Resources' || resource.category === 'AI Tools';
+
+              // TYPE 1: WIDE STRIP (GitHub Repos & Dev Tools)
+              if (isWideStrip) {
+                return (
+                  <div 
+                    key={resource.id} 
+                    className="md:col-span-2 lg:col-span-3 rounded-2xl glass-panel p-5 border border-white/10 hover:border-ff-gold/40 transition-all space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                          <FolderGit2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-serif font-bold text-base text-neutral-100">
+                              {resource.name}
+                            </h3>
+                            <Badge variant="jade" size="xs">
+                              {resource.verificationStatus === 'verified' ? 'Đã Kiểm Thử' : 'Đã Xác Minh'}
+                            </Badge>
+                          </div>
+                          <span className="text-[11px] text-neutral-500 font-mono">{resource.category}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <a 
+                          href={resource.sourceUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-neutral-300 text-xs flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> Nguồn
+                        </a>
+                        <Button 
+                          variant="primary" 
+                          size="sm" 
+                          iconRight={ArrowRight}
+                          onClick={() => handleUseResourceInProject(resource)}
+                        >
+                          Use in Project
+                        </Button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+                      {resource.description}
+                    </p>
+
+                    {/* Spec Bar Mini File Tree / Tech spec */}
+                    <div className="p-3 rounded-xl bg-black/60 border border-white/5 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono text-neutral-400">
+                      <div>
+                        <span className="text-neutral-500">Tương thích:</span> <span className="text-ff-gold-light">{resource.compatibility}</span>
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">Giấy phép:</span> {resource.license}
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">Chi phí:</span> {resource.pricing}
+                      </div>
+                      <div>
+                        <span className="text-neutral-500">Kiểm tra:</span> {resource.lastChecked}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              // TYPE 2: CODE SNIPPET CARD (Prompts & Skills/Rules)
+              if (isCodeSnippet) {
+                const sampleSnippet = resource.category === 'Prompts' 
+                  ? `PROMPT_BLUEPRINT = {\n  goal: "${resource.name}",\n  audience: "Students & Clubs",\n  format: "macOS Liquid React",\n  output: "Export ZIP"\n};`
+                  : `// .agent/rules/skill.json\n{\n  "name": "${resource.name}",\n  "verified": true,\n  "engine": "Antigravity"\n}`;
+
+                return (
+                  <div 
+                    key={resource.id} 
+                    className="rounded-2xl glass-panel p-5 border border-white/10 hover:border-ff-gold/40 transition-all flex flex-col justify-between space-y-3"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="gold" size="xs">{resource.category}</Badge>
+                        <button
+                          onClick={() => handleCopyCode(resource.id, sampleSnippet)}
+                          className="text-[11px] text-neutral-400 hover:text-white flex items-center gap-1"
+                        >
+                          {copiedCodeId === resource.id ? <Check className="w-3.5 h-3.5 text-ff-jade" /> : <Copy className="w-3.5 h-3.5" />}
+                          <span>{copiedCodeId === resource.id ? 'Đã Chép' : 'Sao Chép'}</span>
+                        </button>
+                      </div>
+
+                      <h3 className="font-serif font-bold text-base text-neutral-100">
+                        {resource.name}
+                      </h3>
+                      <p className="text-xs text-neutral-400 line-clamp-2">
+                        {resource.description}
+                      </p>
+
+                      {/* Code Snippet Box */}
+                      <div className="p-3 rounded-xl bg-black/80 font-mono text-[11px] text-amber-300/90 border border-white/5 overflow-x-auto leading-relaxed">
+                        <pre>{sampleSnippet}</pre>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[10px] text-neutral-500 font-mono">{resource.difficulty}</span>
+                      <Button 
+                        variant="primary" 
+                        size="sm"
+                        onClick={() => handleUseResourceInProject(resource)}
+                      >
+                        Gắn Vào Dự Án
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+
+              // TYPE 3: VISUAL SHOWCASE CARD (UI/UX & AI Tools)
+              return (
+                <div 
+                  key={resource.id} 
+                  className="rounded-2xl glass-panel p-5 border border-white/10 hover:border-ff-gold/40 transition-all flex flex-col justify-between space-y-3 group"
+                >
+                  <div className="space-y-3">
+                    <div className="h-28 rounded-xl bg-gradient-to-br from-neutral-900 to-black border border-white/10 relative overflow-hidden flex items-center justify-center">
+                      <div className="absolute inset-0 bg-radial-gradient from-ff-gold/10 to-transparent" />
+                      <Cpu className="w-10 h-10 text-ff-gold group-hover:scale-110 transition-transform duration-300" />
+                      <span className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full bg-black/70 text-ff-gold font-mono">
+                        {resource.pricing}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-ff-gold font-mono uppercase">{resource.category}</span>
+                      <h3 className="font-serif font-bold text-base text-neutral-100 mt-0.5">
+                        {resource.name}
+                      </h3>
+                      <p className="text-xs text-neutral-400 line-clamp-2 mt-1">
+                        {resource.description}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {resource.tags?.slice(0, 3).map(t => (
+                        <span key={t} className="text-[9px] px-2 py-0.5 rounded bg-white/5 text-neutral-300 font-mono">
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] text-ff-jade font-mono">● {resource.verificationStatus}</span>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      onClick={() => handleUseResourceInProject(resource)}
+                    >
+                      Dùng Trong Dự Án
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
